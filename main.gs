@@ -13,6 +13,9 @@ onflag {
     delete gooXVel;
     delete gooYVel;
     delete gooConnections;
+    SPRING_K = 0.55;   # How stiff the connections are
+    DAMPING = 0.88;   # Air resistance/friction
+    REST_LENGTH = 50; # The target distance between connected goos
 
     lastGooTime = 0;
     selectedGoo = 0;
@@ -86,11 +89,7 @@ proc addGooConnection selectedID, connectID, connectOther=false {
 }
 
 proc gooPhysics {
-    local SPRING_K = 0.25;   # How stiff the connections are
-    local DAMPING = 0.85;   # Air resistance/friction (prevents infinite bouncing)
-    local REST_LENGTH = 50; # The target distance between connected goos
-
-    # --- 1. CALCULATE SPRING FORCES ---
+    # Calculate spring forces
     i = 1;
     repeat length gooConnections {
         local connectID = gooConnections[i];
@@ -107,14 +106,31 @@ proc gooPhysics {
                 local force = diff * SPRING_K;
 
                 # Normalize the direction and apply the force to the velocity
-                gooXVel[gooID] += (dx / dist) * force;
-                gooYVel[gooID] += (dy / dist) * force;
+                gooXVel[gooID] += (dx / dist) * force * 0.7;  # Reduce force application to prevent oscillation
+                gooYVel[gooID] += (dy / dist) * force * 0.7;
+                
+                # Clamp velocity to prevent wild oscillation on connection
+                local vel_mag = DIST(0, 0, gooXVel[gooID], gooYVel[gooID]);
+                if vel_mag > 3 {
+                    gooXVel[gooID] = (gooXVel[gooID] / vel_mag) * 3;
+                    gooYVel[gooID] = (gooYVel[gooID] / vel_mag) * 3;
+                }
             }
         }
         i++;
     }
 
-    # --- 2. APPLY GRAVITY, DAMPING, AND MOVEMENT ---
+    # Zero out velocities for gooballs on the ground to prevent sliding
+    i = 1;
+    repeat length gooX {
+        if gooY[i] <= -150 {
+            gooXVel[i] = 0;
+            gooYVel[i] = 0;
+        }
+        i++;
+    }
+
+    # Apply gravity, damping, and movement
     i = 1;
     repeat length gooX {
         # Don't apply physics to the goo we are dragging!
@@ -122,19 +138,26 @@ proc gooPhysics {
             # Gravity
             gooYVel[i] -= 1;
 
-            # Damping (Energy loss)
+            # Damping
             gooXVel[i] *= DAMPING;
             gooYVel[i] *= DAMPING;
+            
+            if abs(gooXVel[i]) < 0.1 {
+                gooXVel[i] *= 0.8;
+            }
+            if abs(gooYVel[i]) < 0.1 {
+                gooYVel[i] *= 0.8;
+            }
 
             # Move the goo
             gooX[i] += gooXVel[i];
             gooY[i] += gooYVel[i];
 
-            # Floor collision
+            # Floor collision - completely stop all movement
             if gooY[i] <= -150 {
                 gooY[i] = -150;
-                gooYVel[i] *= -0.8; # Bounce off the floor
-                gooXVel[i] *= 0.2;  # Ground friction
+                gooYVel[i] = 0;  # Stop vertical movement completely
+                gooXVel[i] = 0;  # Completely stop horizontal movement on ground
             }
         } else {
             # If we are holding it, kill its velocity so it doesn't fly away when released
