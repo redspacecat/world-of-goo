@@ -86,16 +86,63 @@ proc addGooConnection selectedID, connectID, connectOther=false {
 }
 
 proc gooPhysics {
-    # i = 1;
-    # repeat length gooX {
-    #     gooYVel[i] -= 1;
-    #     gooY[i] += gooYVel[i];
-    #     if gooY[i] < -150 {
-    #         gooY[i] = -150;
-    #         gooYVel[i] = 0;
-    #     }
-    #     i++;
-    # }
+    local SPRING_K = 0.25;   # How stiff the connections are
+    local DAMPING = 0.85;   # Air resistance/friction (prevents infinite bouncing)
+    local REST_LENGTH = 50; # The target distance between connected goos
+
+    # --- 1. CALCULATE SPRING FORCES ---
+    i = 1;
+    repeat length gooConnections {
+        local connectID = gooConnections[i];
+        if connectID > 0 {
+            local gooID = ((i - 1) // 3) + 1;
+
+            local dx = gooX[connectID] - gooX[gooID];
+            local dy = gooY[connectID] - gooY[gooID];
+            local dist = DIST(gooX[gooID], gooY[gooID], gooX[connectID], gooY[connectID]);
+
+            if dist > 0 {
+                # Calculate how far the spring is stretched or squished
+                local diff = dist - REST_LENGTH;
+                local force = diff * SPRING_K;
+
+                # Normalize the direction and apply the force to the velocity
+                gooXVel[gooID] += (dx / dist) * force;
+                gooYVel[gooID] += (dy / dist) * force;
+            }
+        }
+        i++;
+    }
+
+    # --- 2. APPLY GRAVITY, DAMPING, AND MOVEMENT ---
+    i = 1;
+    repeat length gooX {
+        # Don't apply physics to the goo we are dragging!
+        if i != selectedGoo {
+            # Gravity
+            gooYVel[i] -= 1;
+
+            # Damping (Energy loss)
+            gooXVel[i] *= DAMPING;
+            gooYVel[i] *= DAMPING;
+
+            # Move the goo
+            gooX[i] += gooXVel[i];
+            gooY[i] += gooYVel[i];
+
+            # Floor collision
+            if gooY[i] <= -150 {
+                gooY[i] = -150;
+                gooYVel[i] *= -0.8; # Bounce off the floor
+                gooXVel[i] *= 0.2;  # Ground friction
+            }
+        } else {
+            # If we are holding it, kill its velocity so it doesn't fly away when released
+            gooXVel[i] = 0;
+            gooYVel[i] = 0;
+        }
+        i++;
+    }
 }
 
 proc renderGoo {
