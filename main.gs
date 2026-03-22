@@ -172,7 +172,7 @@ proc gooPhysics {
     i = 1;
     repeat length goo {
         if goo[i].y <= -150 {
-            goo[i].xVel = 0;
+            goo[i].xVel *= 0.7;
             goo[i].yVel = 0;
         }
         i++;
