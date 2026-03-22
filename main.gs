@@ -1,12 +1,13 @@
 costumes "assets/blank.svg";
 %include std/math
+%include std/list
 
 list GooBall goo;
 list gooConnections;
 list GooTypeDef gooTypes;
 list gooForcesX;
 list gooForcesY;
-list possibleConnections;
+list GooConn possibleConnections;
 
 enum GooTypes {
     Black=1,
@@ -29,6 +30,11 @@ struct GooBall {
     xVel,
     yVel,
     type
+}
+
+struct GooConn {
+    id,
+    distance
 }
 
 onflag {
@@ -99,8 +105,8 @@ proc handleSelection {
             if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
                 i = 1;
                 repeat length possibleConnections {
-                    if possibleConnections[i] != selectedGoo {
-                        addGooConnection selectedGoo, possibleConnections[i];
+                    if possibleConnections[i].id != selectedGoo {
+                        addGooConnection selectedGoo, possibleConnections[i].id;
                         show gooConnections;
                     }
                     i++;
@@ -114,18 +120,28 @@ proc handleSelection {
 
 proc findPossibleConnections {
     delete possibleConnections;
-    show possibleConnections;
+    # show possibleConnections;
     i = 1;
     repeat length goo {
         if i != selectedGoo {
-            if DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y) < REST_LENGTH + 10 {
-                if length possibleConnections < gooTypes[goo[selectedGoo].type].maxConns {
-                    add i to possibleConnections;
-                }
+            local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
+            if connDistance < REST_LENGTH + 10 {
+                add GooConn {id: i, distance: connDistance} to possibleConnections;
             }
         }
         i++;
     }
+
+    INSERTION_SORT_BY_FIELD(GooConn, possibleConnections, .distance);
+    until length possibleConnections <= gooTypes[goo[selectedGoo].type].maxConns {
+        delete possibleConnections["last"];
+    }
+
+    # i = 1;
+    # repeat length possibleConnections {
+    #     add  to connectionLengths
+    #     i++;
+    # }
 }
 
 proc addGooConnection selectedID, connectID, connectOther=false {
@@ -206,7 +222,7 @@ proc gooPhysics {
     repeat length goo {
         if goo[i].y <= -150 {
             goo[i].xVel *= 0.7;
-            goo[i].yVel = 0;
+            goo[i].yVel *= 0.7;
         }
         i++;
     }
@@ -238,9 +254,11 @@ proc gooPhysics {
             if goo[i].yVel < -0.5 {
                 goo[i].yVel -= 1;
             } elif goo[i].yVel < -0.6 {
-                goo[i].yVel -= 1.5;
-            } elif goo[i].yVel < -0.85 {
+                goo[i].yVel -= 2;
+            } elif goo[i].yVel < -0.7 {
                 goo[i].yVel -= 2.5;
+            } elif goo[i].yVel < -0.8 {
+                goo[i].yVel -= 3.5;
             }
 
             # Damping
@@ -290,7 +308,7 @@ proc renderGoo {
         set_pen_color "#ffffff";
         i = 1;
         repeat length possibleConnections {
-            local targetGoo = possibleConnections[i];
+            local targetGoo = possibleConnections[i].id;
             drawConnection targetGoo, selectedGoo, false;
             i++;
         }
