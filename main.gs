@@ -1,21 +1,41 @@
 costumes "assets/blank.svg";
 %include std/math
 
-list gooX;
-list gooY;
-list gooXVel;
-list gooYVel;
+list GooBall goo;
 list gooConnections;
+list GooTypeDef gooTypes;
+
+enum GooTypes {
+    Black=1,
+    Green=2,
+    White=3
+}
+
+struct GooTypeDef {
+    maxConns,
+    minConns,
+    color,
+    isDetachable
+}
+
+struct GooBall {
+    x,
+    y,
+    xVel,
+    yVel,
+    type
+}
 
 onflag {
-    delete gooX;
-    delete gooY;
-    delete gooXVel;
-    delete gooYVel;
+    delete goo;
     delete gooConnections;
     SPRING_K = 0.55;   # How stiff the connections are
     DAMPING = 0.88;   # Air resistance/friction
     REST_LENGTH = 50; # The target distance between connected goos
+
+    initGooTypes;
+
+    maxConnections = 6;
 
     lastGooTime = 0;
     selectedGoo = 0;
@@ -28,38 +48,40 @@ onflag {
 }
 
 onkey "space" {
-    add mouse_x() to gooX;
-    add mouse_y() to gooY;
-    add 0 to gooXVel;
-    add 0 to gooYVel;
-    repeat 3 {
+    add GooBall {x: mouse_x(), y: mouse_y(), xVel: 0, yVel: 0, type: GooTypes.Black} to goo;
+    repeat maxConnections {
         add 0 to gooConnections;
     }
     lastGooTime = 0;
+}
+
+proc initGooTypes {
+    add GooTypeDef {color: "#000000", maxConns: 2, minConns: 2, isDetachable: false} to gooTypes;
+    add GooTypeDef {color: "#0b7d13", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
+    add GooTypeDef {color: "#dadada", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
 }
 
 proc handleSelection {
     if mouse_down() {
         if selectedGoo == 0 {
             i = 1;
-            repeat length gooX {
-                if DIST(gooX[i], gooY[i], mouse_x(), mouse_y()) < 20 {
+            repeat length goo {
+                if DIST(goo[i].x, goo[i].y, mouse_x(), mouse_y()) < 20 {
                     selectedGoo = i;
                     show selectedGoo;
                 }
                 i++;
             }
         } else {
-            gooX[selectedGoo] = mouse_x();
-            gooY[selectedGoo] = mouse_y();
+            goo[selectedGoo].x = mouse_x();
+            goo[selectedGoo].y = mouse_y();
         }
     } else {
         if selectedGoo > 0 {
             i = 1;
-            repeat length gooX {
+            repeat length goo {
                 if i != selectedGoo {
-                    if DIST(gooX[selectedGoo], gooY[selectedGoo], gooX[i], gooY[i]) < 50 {
-                        # gooConnections[selectedGoo*3] = i;
+                    if DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y) < 50 {
                         addGooConnection selectedGoo, i;
                         show gooConnections;
                     }
@@ -72,8 +94,8 @@ proc handleSelection {
 }
 
 proc addGooConnection selectedID, connectID, connectOther=false {
-    local i = ($selectedID - 1) * 3 + 1;
-    repeat 3 {
+    local i = ($selectedID - 1) * maxConnections + 1;
+    repeat maxConnections {
         if gooConnections[i] == $connectID {
             stop_this_script;
         } elif gooConnections[i] == 0 {
@@ -94,11 +116,11 @@ proc gooPhysics {
     repeat length gooConnections {
         local connectID = gooConnections[i];
         if connectID > 0 {
-            local gooID = ((i - 1) // 3) + 1;
+            local gooID = ((i - 1) // maxConnections) + 1;
 
-            local dx = gooX[connectID] - gooX[gooID];
-            local dy = gooY[connectID] - gooY[gooID];
-            local dist = DIST(gooX[gooID], gooY[gooID], gooX[connectID], gooY[connectID]);
+            local dx = goo[connectID].x - goo[gooID].x;
+            local dy = goo[connectID].y - goo[gooID].y;
+            local dist = DIST(goo[gooID].x, goo[gooID].y, goo[connectID].x, goo[connectID].y);
 
             if dist > 0 {
                 # Calculate how far the spring is stretched or squished
@@ -106,14 +128,14 @@ proc gooPhysics {
                 local force = diff * SPRING_K;
 
                 # Normalize the direction and apply the force to the velocity
-                gooXVel[gooID] += (dx / dist) * force * 0.7;  # Reduce force application to prevent oscillation
-                gooYVel[gooID] += (dy / dist) * force * 0.7;
+                goo[gooID].xVel += (dx / dist) * force * 0.7;  # Reduce force application to prevent oscillation
+                goo[gooID].yVel += (dy / dist) * force * 0.7;
                 
                 # Clamp velocity to prevent wild oscillation on connection
-                local vel_mag = DIST(0, 0, gooXVel[gooID], gooYVel[gooID]);
+                local vel_mag = DIST(0, 0, goo[gooID].xVel, goo[gooID].yVel);
                 if vel_mag > 3 {
-                    gooXVel[gooID] = (gooXVel[gooID] / vel_mag) * 3;
-                    gooYVel[gooID] = (gooYVel[gooID] / vel_mag) * 3;
+                    goo[gooID].xVel = (goo[gooID].xVel / vel_mag) * 3;
+                    goo[gooID].yVel = (goo[gooID].yVel / vel_mag) * 3;
                 }
             }
         }
@@ -122,47 +144,47 @@ proc gooPhysics {
 
     # Zero out velocities for gooballs on the ground to prevent sliding
     i = 1;
-    repeat length gooX {
-        if gooY[i] <= -150 {
-            gooXVel[i] = 0;
-            gooYVel[i] = 0;
+    repeat length goo {
+        if goo[i].y <= -150 {
+            goo[i].xVel = 0;
+            goo[i].yVel = 0;
         }
         i++;
     }
 
     # Apply gravity, damping, and movement
     i = 1;
-    repeat length gooX {
+    repeat length goo {
         # Don't apply physics to the goo we are dragging!
         if i != selectedGoo {
             # Gravity
-            gooYVel[i] -= 1;
+            goo[i].yVel -= 1;
 
             # Damping
-            gooXVel[i] *= DAMPING;
-            gooYVel[i] *= DAMPING;
+            goo[i].xVel *= DAMPING;
+            goo[i].yVel *= DAMPING;
             
-            if abs(gooXVel[i]) < 0.1 {
-                gooXVel[i] *= 0.8;
+            if abs(goo[i].xVel) < 0.1 {
+                goo[i].xVel *= 0.8;
             }
-            if abs(gooYVel[i]) < 0.1 {
-                gooYVel[i] *= 0.8;
+            if abs(goo[i].yVel) < 0.1 {
+                goo[i].yVel *= 0.8;
             }
 
             # Move the goo
-            gooX[i] += gooXVel[i];
-            gooY[i] += gooYVel[i];
+            goo[i].x += goo[i].xVel;
+            goo[i].y += goo[i].yVel;
 
             # Floor collision - completely stop all movement
-            if gooY[i] <= -150 {
-                gooY[i] = -150;
-                gooYVel[i] = 0;  # Stop vertical movement completely
-                gooXVel[i] = 0;  # Completely stop horizontal movement on ground
+            if goo[i].y <= -150 {
+                goo[i].y = -150;
+                goo[i].yVel = 0;  # Stop vertical movement completely
+                goo[i].xVel = 0;  # Completely stop horizontal movement on ground
             }
         } else {
             # If we are holding it, kill its velocity so it doesn't fly away when released
-            gooXVel[i] = 0;
-            gooYVel[i] = 0;
+            goo[i].xVel = 0;
+            goo[i].yVel = 0;
         }
         i++;
     }
@@ -176,7 +198,7 @@ proc renderGoo {
     i = 1;
     repeat length gooConnections {
         if gooConnections[i] > 0 {
-            drawConnection ((i - 1) // 3) + 1, gooConnections[i];
+            drawConnection ((i - 1) // maxConnections) + 1, gooConnections[i];
         }
         i++;
     }
@@ -185,8 +207,8 @@ proc renderGoo {
     set_pen_size 15;
 
     i = 1;
-    repeat length gooX {
-        goto gooX[i], gooY[i];
+    repeat length goo {
+        goto goo[i].x, goo[i].y;
         pen_down;
         pen_up;
         i++;
@@ -194,8 +216,8 @@ proc renderGoo {
 }
 
 proc drawConnection gooID, connectID {
-    goto gooX[$gooID], gooY[$gooID];
+    goto goo[$gooID].x, goo[$gooID].y;
     pen_down;
-    goto gooX[$connectID], gooY[$connectID];
+    goto goo[$connectID].x, goo[$connectID].y;
     pen_up;
 }
