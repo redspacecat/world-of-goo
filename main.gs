@@ -4,6 +4,8 @@ costumes "assets/blank.svg";
 list GooBall goo;
 list gooConnections;
 list GooTypeDef gooTypes;
+list gooForcesX;
+list gooForcesY;
 
 enum GooTypes {
     Black=1,
@@ -29,8 +31,8 @@ struct GooBall {
 onflag {
     delete goo;
     delete gooConnections;
-    SPRING_K = 0.55;   # How stiff the connections are
-    DAMPING = 0.88;   # Air resistance/friction
+    SPRING_K = 0.6;   # How stiff the connections are
+    DAMPING = 0.85;   # Air resistance/friction
     REST_LENGTH = 50; # The target distance between connected goos
 
     initGooTypes;
@@ -111,7 +113,17 @@ proc addGooConnection selectedID, connectID, connectOther=false {
 }
 
 proc gooPhysics {
-    # Calculate spring forces
+    # Initialize force accumulators
+    delete gooForcesX;
+    delete gooForcesY;
+    i = 1;
+    repeat length goo {
+        add 0 to gooForcesX;
+        add 0 to gooForcesY;
+        i++;
+    }
+
+    # Calculate and accumulate spring forces
     i = 1;
     repeat length gooConnections {
         local connectID = gooConnections[i];
@@ -127,17 +139,31 @@ proc gooPhysics {
                 local diff = dist - REST_LENGTH;
                 local force = diff * SPRING_K;
 
-                # Normalize the direction and apply the force to the velocity
-                goo[gooID].xVel += (dx / dist) * force * 0.7;  # Reduce force application to prevent oscillation
-                goo[gooID].yVel += (dy / dist) * force * 0.7;
+                # Normalize the direction and accumulate forces
+                local fx = (dx / dist) * force * 0.5;
+                local fy = (dy / dist) * force * 0.5;
                 
-                # Clamp velocity to prevent wild oscillation on connection
-                local vel_mag = DIST(0, 0, goo[gooID].xVel, goo[gooID].yVel);
-                if vel_mag > 3 {
-                    goo[gooID].xVel = (goo[gooID].xVel / vel_mag) * 3;
-                    goo[gooID].yVel = (goo[gooID].yVel / vel_mag) * 3;
-                }
+                gooForcesX[gooID] += fx;
+                gooForcesY[gooID] += fy;
+                
+                gooForcesX[connectID] -= fx;
+                gooForcesY[connectID] -= fy;
             }
+        }
+        i++;
+    }
+
+    # Apply accumulated forces to velocities
+    i = 1;
+    repeat length goo {
+        goo[i].xVel += gooForcesX[i];
+        goo[i].yVel += gooForcesY[i];
+        
+        # Clamp velocity to prevent wild oscillation
+        local vel_mag = DIST(0, 0, goo[i].xVel, goo[i].yVel);
+        if vel_mag > 4 {
+            goo[i].xVel = (goo[i].xVel / vel_mag) * 4;
+            goo[i].yVel = (goo[i].yVel / vel_mag) * 4;
         }
         i++;
     }
@@ -158,17 +184,17 @@ proc gooPhysics {
         # Don't apply physics to the goo we are dragging!
         if i != selectedGoo {
             # Gravity
-            goo[i].yVel -= 1;
+            goo[i].yVel -= 0.7;
 
             # Damping
             goo[i].xVel *= DAMPING;
             goo[i].yVel *= DAMPING;
             
             if abs(goo[i].xVel) < 0.1 {
-                goo[i].xVel *= 0.8;
+                goo[i].xVel *= 0.7;
             }
             if abs(goo[i].yVel) < 0.1 {
-                goo[i].yVel *= 0.8;
+                goo[i].yVel *= 0.7;
             }
 
             # Move the goo
