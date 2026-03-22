@@ -6,6 +6,7 @@ list gooConnections;
 list GooTypeDef gooTypes;
 list gooForcesX;
 list gooForcesY;
+list possibleConnections;
 
 enum GooTypes {
     Black=1,
@@ -13,10 +14,12 @@ enum GooTypes {
     White=3
 }
 
+# conn = connection
 struct GooTypeDef {
     maxConns,
     minConns,
-    color,
+    gooColor,
+    connColor,
     isDetachable
 }
 
@@ -31,8 +34,8 @@ struct GooBall {
 onflag {
     delete goo;
     delete gooConnections;
-    SPRING_K = 0.6;   # How stiff the connections are
-    DAMPING = 0.85;   # Air resistance/friction
+    SPRING_K = 0.9;   # How stiff the connections are
+    DAMPING = 0.6;   # Air resistance/friction
     REST_LENGTH = 50; # The target distance between connected goos
 
     initGooTypes;
@@ -41,6 +44,7 @@ onflag {
 
     lastGooTime = 0;
     selectedGoo = 0;
+    selectedCreationGoo = GooTypes.Black;
     pen_up;
     forever {
         handleSelection;
@@ -50,17 +54,27 @@ onflag {
 }
 
 onkey "space" {
-    add GooBall {x: mouse_x(), y: mouse_y(), xVel: 0, yVel: 0, type: GooTypes.Black} to goo;
+    add GooBall {x: mouse_x(), y: mouse_y(), xVel: 0, yVel: 0, type: selectedCreationGoo} to goo;
     repeat maxConnections {
         add 0 to gooConnections;
     }
     lastGooTime = 0;
 }
 
+onkey "1" {
+    selectedCreationGoo = GooTypes.Black;
+}
+onkey "2" {
+    selectedCreationGoo = GooTypes.Green;
+}
+onkey "3" {
+    selectedCreationGoo = GooTypes.White;
+}
+
 proc initGooTypes {
-    add GooTypeDef {color: "#000000", maxConns: 2, minConns: 2, isDetachable: false} to gooTypes;
-    add GooTypeDef {color: "#0b7d13", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
-    add GooTypeDef {color: "#dadada", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
+    add GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false} to gooTypes;
+    add GooTypeDef {gooColor: "#0b7d13", connColor: "#0b430e", maxConns: 3, minConns: 1, isDetachable: false} to gooTypes;
+    add GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
 }
 
 proc handleSelection {
@@ -80,15 +94,27 @@ proc handleSelection {
         }
     } else {
         if selectedGoo > 0 {
+            delete possibleConnections;
+            show possibleConnections;
             i = 1;
             repeat length goo {
                 if i != selectedGoo {
                     if DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y) < 50 {
-                        addGooConnection selectedGoo, i;
-                        show gooConnections;
+                        add i to possibleConnections;
                     }
                 }
                 i++;
+            }
+
+            if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
+                i = 1;
+                repeat length possibleConnections {
+                    if possibleConnections[i] != selectedGoo {
+                        addGooConnection selectedGoo, possibleConnections[i];
+                        show gooConnections;
+                    }
+                    i++;
+                }
             }
         }
         selectedGoo = 0;
@@ -97,7 +123,7 @@ proc handleSelection {
 
 proc addGooConnection selectedID, connectID, connectOther=false {
     local i = ($selectedID - 1) * maxConnections + 1;
-    repeat maxConnections {
+    repeat gooTypes[goo[$selectedID].type].maxConns {
         if gooConnections[i] == $connectID {
             stop_this_script;
         } elif gooConnections[i] == 0 {
@@ -183,8 +209,32 @@ proc gooPhysics {
     repeat length goo {
         # Don't apply physics to the goo we are dragging!
         if i != selectedGoo {
-            # Gravity
-            goo[i].yVel -= 0.7;
+            # Count connections for this goo
+            local connCount = 0;
+            local connIndex = (i - 1) * maxConnections + 1;
+            local j = 0;
+            repeat maxConnections {
+                if gooConnections[connIndex + j] > 0 {
+                    connCount++;
+                }
+                j++;
+            }
+
+            # Gravity - stronger for loosely connected goos
+            if connCount < 2 {
+                goo[i].yVel -= 3;  # Fast fall for loose goos
+            } else {
+                goo[i].yVel -= 0.5;  # Light gravity for connected goos
+            }
+
+            # Extra gravity for falling goos to accelerate collapses
+            if goo[i].yVel < -0.5 {
+                goo[i].yVel -= 1;
+            } elif goo[i].yVel < -0.6 {
+                goo[i].yVel -= 1.5;
+            } elif goo[i].yVel < -0.85 {
+                goo[i].yVel -= 2.5;
+            }
 
             # Damping
             goo[i].xVel *= DAMPING;
@@ -219,7 +269,6 @@ proc gooPhysics {
 proc renderGoo {
     erase_all;
 
-    set_pen_color "#6e6e6e";
     set_pen_size 5;
     i = 1;
     repeat length gooConnections {
@@ -229,11 +278,11 @@ proc renderGoo {
         i++;
     }
 
-    set_pen_color "#000000";
     set_pen_size 15;
 
     i = 1;
     repeat length goo {
+        set_pen_color gooTypes[goo[i].type].gooColor;
         goto goo[i].x, goo[i].y;
         pen_down;
         pen_up;
@@ -242,6 +291,7 @@ proc renderGoo {
 }
 
 proc drawConnection gooID, connectID {
+    set_pen_color gooTypes[goo[$gooID].type].connColor;
     goto goo[$gooID].x, goo[$gooID].y;
     pen_down;
     goto goo[$connectID].x, goo[$connectID].y;
