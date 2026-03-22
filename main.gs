@@ -82,7 +82,7 @@ proc handleSelection {
         if selectedGoo == 0 {
             i = 1;
             repeat length goo {
-                if DIST(goo[i].x, goo[i].y, mouse_x(), mouse_y()) < 20 {
+                if DIST(goo[i].x, goo[i].y, mouse_x(), mouse_y()) < 12 {
                     selectedGoo = i;
                     show selectedGoo;
                 }
@@ -91,21 +91,11 @@ proc handleSelection {
         } else {
             goo[selectedGoo].x = mouse_x();
             goo[selectedGoo].y = mouse_y();
+            findPossibleConnections;
         }
     } else {
         if selectedGoo > 0 {
-            delete possibleConnections;
-            show possibleConnections;
-            i = 1;
-            repeat length goo {
-                if i != selectedGoo {
-                    if DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y) < 50 {
-                        add i to possibleConnections;
-                    }
-                }
-                i++;
-            }
-
+            findPossibleConnections;
             if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
                 i = 1;
                 repeat length possibleConnections {
@@ -118,6 +108,23 @@ proc handleSelection {
             }
         }
         selectedGoo = 0;
+        delete possibleConnections;
+    }
+}
+
+proc findPossibleConnections {
+    delete possibleConnections;
+    show possibleConnections;
+    i = 1;
+    repeat length goo {
+        if i != selectedGoo {
+            if DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y) < REST_LENGTH + 10 {
+                if length possibleConnections < gooTypes[goo[selectedGoo].type].maxConns {
+                    add i to possibleConnections;
+                }
+            }
+        }
+        i++;
     }
 }
 
@@ -278,8 +285,18 @@ proc renderGoo {
         i++;
     }
 
-    set_pen_size 15;
+    # Highlight attachment points when holding a gooball
+    if selectedGoo > 0 {
+        set_pen_color "#ffffff";
+        i = 1;
+        repeat length possibleConnections {
+            local targetGoo = possibleConnections[i];
+            drawConnection targetGoo, selectedGoo, false;
+            i++;
+        }
+    }
 
+    set_pen_size 15;
     i = 1;
     repeat length goo {
         set_pen_color gooTypes[goo[i].type].gooColor;
@@ -290,8 +307,10 @@ proc renderGoo {
     }
 }
 
-proc drawConnection gooID, connectID {
-    set_pen_color gooTypes[goo[$gooID].type].connColor;
+proc drawConnection gooID, connectID, changeColor=true {
+    if $changeColor {
+        set_pen_color gooTypes[goo[$gooID].type].connColor;
+    }
     goto goo[$gooID].x, goo[$gooID].y;
     pen_down;
     goto goo[$connectID].x, goo[$connectID].y;
