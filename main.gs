@@ -42,6 +42,11 @@ struct StrandConnection {
     id2
 }
 
+struct Point {
+    x,
+    y
+}
+
 onflag {
     delete goo;
     delete gooConnections;
@@ -84,9 +89,45 @@ onkey "3" {
 
 proc initGooTypes {
     add GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false} to gooTypes;
-    add GooTypeDef {gooColor: "#0b7d13", connColor: "#0b430e", maxConns: 3, minConns: 1, isDetachable: false} to gooTypes;
+    add GooTypeDef {gooColor: "#0b7d13", connColor: "#0b430e", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
     add GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
 }
+
+func crossProduct(Point A, Point B) {
+    return ($A.x * $B.y) - ($A.y * $B.x);
+}
+
+func sameSide(Point p1, Point p2, Point a, Point b) {
+    local Point vectorAB = Point {x: $b.x - $a.x, y: $b.y - $a.y};
+
+    local cp1 = crossProduct(vectorAB, Point {x: $p1.x - $a.x, y: $p1.y - $a.y});
+    local cp2 = crossProduct(vectorAB, Point {x: $p2.x - $a.x, y: $p2.y - $a.y});
+    return cp1 * cp2 >= 0;
+}
+
+func pointInTriangle(Point p, Point a, Point b, Point c) {
+    if sameSide($p, $c, $a, $b)
+    and sameSide($p, $a, $b, $c)
+    and sameSide($p, $b, $c, $a) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+func ccw(Point A, Point B, Point C) {
+    return ($C.y-$A.y) * ($B.x-$A.x) > ($B.y-$A.y) * ($C.x-$A.x);
+}
+
+func intersect(Point A, Point B, Point C, Point D) {
+    # if the points are roughly the same, we can say they're not overlapping
+    if DIST($A.x, $A.y, $C.x, $C.y) < 0.1 {return false;}
+    if DIST($A.x, $A.y, $D.x, $D.y) < 0.1 {return false;}
+    if DIST($B.x, $B.y, $C.x, $C.y) < 0.1 {return false;}
+    if DIST($B.x, $B.y, $C.x, $C.y) < 0.1 {return false;}
+    return ccw($A, $C, $D) != ccw($B, $C, $D) and ccw($A, $B, $C) != ccw($A, $B, $D);
+}
+
 
 proc deleteGooBall id {
     # Update all connections to account for the shifted/deleted ID
@@ -169,13 +210,45 @@ proc findPossibleConnections {
         if i != selectedGoo {
             local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
             if connDistance < REST_LENGTH + 10 {
-                add GooConn {id: i, distance: connDistance} to possibleConnections;
+                # Detecting if the target connection line crosses through any of the connections
+                local j = 1;
+                local intersects = false;
+                repeat length gooConnections {
+                    if gooConnections[j] > 0 {
+                        if not intersects {
+                            local currentID = ((j - 1) // maxConnections) + 1;
+                            local Point A = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                            local Point B = Point {x: goo[i].x, y: goo[i].y};
+                            local Point C = Point {x: goo[currentID].x, y: goo[currentID].y};
+                            local Point D = Point {x: goo[gooConnections[j]].x, y: goo[gooConnections[j]].y};
+                            if intersect(A, B, C, D) {
+                                intersects = true;
+                            }
+                        }
+                    }
+                    j++;
+                }
+
+                if not intersects {
+                    add GooConn {id: i, distance: connDistance} to possibleConnections;
+                }
             }
         }
         i++;
     }
 
     INSERTION_SORT_BY_FIELD(GooConn, possibleConnections, .distance);
+
+    if length possibleConnections >= 3 {
+        # get three closest points and detect if we're inside the triangle that makes
+        local Point A = Point {x: goo[possibleConnections[1].id].x, y: goo[possibleConnections[1].id].y};
+        local Point B = Point {x: goo[possibleConnections[2].id].x, y: goo[possibleConnections[2].id].y};
+        local Point C = Point {x: goo[possibleConnections[3].id].x, y: goo[possibleConnections[3].id].y};
+        if pointInTriangle(Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y}, A, B, C) {
+            delete possibleConnections;
+        }
+    }
+
     until length possibleConnections <= gooTypes[goo[selectedGoo].type].maxConns {
         delete possibleConnections["last"];
     }
