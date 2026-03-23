@@ -25,16 +25,21 @@ struct GooTypeDef {
 }
 
 struct GooBall {
-    x,
-    y,
-    xVel,
-    yVel,
-    type
+    x=0,
+    y=0,
+    xVel=0,
+    yVel=0,
+    type=GooTypes.Black
 }
 
 struct GooConn {
     id,
     distance
+}
+
+struct StrandConnection {
+    id1,
+    id2
 }
 
 onflag {
@@ -83,6 +88,37 @@ proc initGooTypes {
     add GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
 }
 
+proc deleteGooBall id {
+    # Update all connections to account for the shifted/deleted ID
+    i = 1;
+    repeat length gooConnections {
+        if gooConnections[i] == $id {
+            # The deleted goo was connected here. Sever the connection. 
+            gooConnections[i] = 0;
+        } elif gooConnections[i] > $id {
+            # Any gooball above the deleted one will shift down by 1 in the main list. 
+            # We must decrement their references to keep them pointing to the right place.
+            gooConnections[i]--;
+        }
+        i++;
+    }
+
+    # Remove the deleted goo's connection slots from the gooConnections list
+    local startIndex = ($id - 1) * maxConnections + 1;
+    repeat maxConnections {
+        delete gooConnections[startIndex];
+    }
+
+    # Delete the actual gooball from the main list
+    delete goo[$id];
+
+    # Fix the player's selection state if necessary
+    if selectedGoo == $id {
+        selectedGoo = 0; # If the player was holding the deleted goo, drop it.
+    } elif selectedGoo > $id {
+        selectedGoo--;   # Shift the selection tracker down to match the new list order.
+    }
+}
 proc handleSelection {
     if mouse_down() {
         if selectedGoo == 0 {
@@ -102,14 +138,21 @@ proc handleSelection {
     } else {
         if selectedGoo > 0 {
             findPossibleConnections;
-            if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
-                i = 1;
-                repeat length possibleConnections {
-                    if possibleConnections[i].id != selectedGoo {
-                        addGooConnection selectedGoo, possibleConnections[i].id;
-                        show gooConnections;
+            if isValidStrandConnection {
+                # log "adding conn, valid";
+                # log strandConnection.id1 & " " & strandConnection.id2;
+                addGooConnection strandConnection.id1, strandConnection.id2, bypassLimit: 100;
+                deleteGooBall selectedGoo;
+            } else {
+                if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
+                    i = 1;
+                    repeat length possibleConnections {
+                        if possibleConnections[i].id != selectedGoo {
+                            addGooConnection selectedGoo, possibleConnections[i].id;
+                            show gooConnections;
+                        }
+                        i++;
                     }
-                    i++;
                 }
             }
         }
@@ -142,18 +185,58 @@ proc findPossibleConnections {
     #     add  to connectionLengths
     #     i++;
     # }
+
+    checkForStrandConnection;
 }
 
-proc addGooConnection selectedID, connectID, connectOther=false {
+proc checkForStrandConnection {
+    isValidStrandConnection = false;
+    if length possibleConnections != 2 {
+        stop_this_script;
+    }
+
+    local GooConn p0 = possibleConnections[1];
+    local GooConn p1 = possibleConnections[2];
+
+    if p0.distance < REST_LENGTH * 0.8 and p1.distance < REST_LENGTH * 0.8 {
+        # log DIST(goo[p0.id].x, goo[p0.id].y, goo[p1.id].x, goo[p1.id].y);
+        if abs (REST_LENGTH - DIST(goo[p0.id].x, goo[p0.id].y, goo[p1.id].x, goo[p1.id].y)) < 25 {
+            if not doesConnectionExist(p0.id, p1.id) {
+                isValidStrandConnection = true;
+                StrandConnection strandConnection = StrandConnection {id1: p0.id, id2: p1.id};
+            }
+        }
+    }
+}
+
+func doesConnectionExist(source, target) {
+    local i = ($source - 1) * maxConnections + 1;
+    repeat maxConnections {
+        if gooConnections[i] == $target {
+            return true;
+        }
+        i++;
+    }
+    local i = ($target - 1) * maxConnections + 1;
+    repeat maxConnections {
+        if gooConnections[i] == $source {
+            return true;
+        }
+        i++;
+    }
+    return false;
+}
+
+proc addGooConnection selectedID, connectID, connectOther=false, bypassLimit=false {
     local i = ($selectedID - 1) * maxConnections + 1;
-    repeat gooTypes[goo[$selectedID].type].maxConns {
+    repeat gooTypes[goo[$selectedID].type].maxConns + (maxConnections * $bypassLimit) {
         if gooConnections[i] == $connectID {
             stop_this_script;
         } elif gooConnections[i] == 0 {
             gooConnections[i] = $connectID;
             # connect the other direction
             if $connectOther == false {
-                addGooConnection $connectID, $selectedID, true;
+                addGooConnection $connectID, $selectedID, connectOther: true;
             }
             stop_this_script;
         }
@@ -306,11 +389,15 @@ proc renderGoo {
     # Highlight attachment points when holding a gooball
     if selectedGoo > 0 {
         set_pen_color "#ffffff";
-        i = 1;
-        repeat length possibleConnections {
-            local targetGoo = possibleConnections[i].id;
-            drawConnection targetGoo, selectedGoo, false;
-            i++;
+        if isValidStrandConnection {
+            drawConnection strandConnection.id1, strandConnection.id2, false;
+        } else {
+            i = 1;
+            repeat length possibleConnections {
+                local targetGoo = possibleConnections[i].id;
+                drawConnection targetGoo, selectedGoo, false;
+                i++;
+            }
         }
     }
 
