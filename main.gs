@@ -89,7 +89,7 @@ onkey "3" {
 
 proc initGooTypes {
     add GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false} to gooTypes;
-    add GooTypeDef {gooColor: "#0b7d13", connColor: "#0b430e", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
+    add GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
     add GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
 }
 
@@ -251,6 +251,10 @@ proc findPossibleConnections {
 
     until length possibleConnections <= gooTypes[goo[selectedGoo].type].maxConns {
         delete possibleConnections["last"];
+    }
+
+    if length possibleConnections < gooTypes[goo[selectedGoo].type].minConns {
+        delete possibleConnections;
     }
 
     # i = 1;
