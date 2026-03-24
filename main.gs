@@ -51,7 +51,7 @@ onflag {
     delete goo;
     delete gooConnections;
     SPRING_K = 0.9;   # How stiff the connections are
-    DAMPING = 0.6;   # Air resistance/friction
+    DAMPING = 0.5;   # Air resistance/friction
     REST_LENGTH = 50; # The target distance between connected goos
 
     initGooTypes;
@@ -172,9 +172,11 @@ proc handleSelection {
                 i++;
             }
         } else {
-            goo[selectedGoo].x = mouse_x();
-            goo[selectedGoo].y = mouse_y();
-            findPossibleConnections;
+            if goo[selectedGoo].x != mouse_x() or goo[selectedGoo].y != mouse_y() {
+                goo[selectedGoo].x = mouse_x();
+                goo[selectedGoo].y = mouse_y();
+                findPossibleConnections;
+            }
         }
     } else {
         if selectedGoo > 0 {
@@ -182,7 +184,7 @@ proc handleSelection {
             if isValidStrandConnection {
                 # log "adding conn, valid";
                 # log strandConnection.id1 & " " & strandConnection.id2;
-                addGooConnection strandConnection.id1, strandConnection.id2, bypassLimit: 100;
+                addGooConnection strandConnection.id1, strandConnection.id2, bypassLimit: true;
                 deleteGooBall selectedGoo;
             } else {
                 if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
@@ -312,8 +314,8 @@ proc addGooConnection selectedID, connectID, connectOther=false, bypassLimit=fal
         } elif gooConnections[i] == 0 {
             gooConnections[i] = $connectID;
             # connect the other direction
-            if $connectOther == false {
-                addGooConnection $connectID, $selectedID, connectOther: true;
+            if not $connectOther {
+                addGooConnection $connectID, $selectedID, connectOther: true, bypassLimit: true;
             }
             stop_this_script;
         }
@@ -322,6 +324,7 @@ proc addGooConnection selectedID, connectID, connectOther=false, bypassLimit=fal
 }
 
 proc gooPhysics {
+    repeat 1 {
     # Initialize force accumulators
     delete gooForcesX;
     delete gooForcesY;
@@ -345,8 +348,7 @@ proc gooPhysics {
 
             if dist > 0 {
                 # Calculate how far the spring is stretched or squished
-                local diff = dist - REST_LENGTH;
-                local force = diff * SPRING_K;
+                local force = (dist - REST_LENGTH) * SPRING_K;
 
                 # Normalize the direction and accumulate forces
                 local fx = (dx / dist) * force * 0.5;
@@ -370,9 +372,9 @@ proc gooPhysics {
         
         # Clamp velocity to prevent wild oscillation
         local vel_mag = DIST(0, 0, goo[i].xVel, goo[i].yVel);
-        if vel_mag > 4 {
-            goo[i].xVel = (goo[i].xVel / vel_mag) * 4;
-            goo[i].yVel = (goo[i].yVel / vel_mag) * 4;
+        if vel_mag > 12 {
+            goo[i].xVel = (goo[i].xVel / vel_mag) * 12;
+            goo[i].yVel = (goo[i].yVel / vel_mag) * 12;
         }
         i++;
     }
@@ -436,11 +438,16 @@ proc gooPhysics {
             goo[i].x += goo[i].xVel;
             goo[i].y += goo[i].yVel;
 
-            # Floor collision - completely stop all movement
+            # Floor collision
             if goo[i].y <= -150 {
                 goo[i].y = -150;
-                goo[i].yVel = 0;  # Stop vertical movement completely
-                goo[i].xVel = 0;  # Completely stop horizontal movement on ground
+                if goo[i].yVel < -1 { # Only bounce if falling with speed
+                    goo[i].yVel *= -0.5;
+                    goo[i].xVel *= 0.8;
+                } else {
+                    goo[i].yVel = 0;
+                    goo[i].xVel *= 0.7;
+                }            
             }
         } else {
             # If we are holding it, kill its velocity so it doesn't fly away when released
@@ -448,6 +455,7 @@ proc gooPhysics {
             goo[i].yVel = 0;
         }
         i++;
+    }
     }
 }
 
@@ -457,7 +465,7 @@ proc renderGoo {
     set_pen_size 5;
     i = 1;
     repeat length gooConnections {
-        if gooConnections[i] > 0 {
+        if gooConnections[i] > 0 and gooConnections[i] < ((i - 1) // maxConnections) + 1 {
             drawConnection ((i - 1) // maxConnections) + 1, gooConnections[i];
         }
         i++;
