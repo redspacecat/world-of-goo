@@ -5,9 +5,8 @@ costumes "assets/blank.svg";
 list GooBall goo;
 list gooConnections;
 list GooTypeDef gooTypes;
-list gooForcesX;
-list gooForcesY;
 list GooConn possibleConnections;
+list gooConnectionLengths;
 
 enum GooTypes {
     Black=1,
@@ -29,7 +28,9 @@ struct GooBall {
     y=0,
     xVel=0,
     yVel=0,
-    type=GooTypes.Black
+    forceX=0,
+    forceY=0,
+    type=GooTypes.Black,
 }
 
 struct GooConn {
@@ -50,9 +51,13 @@ struct Point {
 onflag {
     delete goo;
     delete gooConnections;
-    SPRING_K = 0.9;   # How stiff the connections are
-    DAMPING = 0.5;   # Air resistance/friction
-    REST_LENGTH = 50; # The target distance between connected goos
+    delete gooConnectionLengths;
+    SPRING_K = 1.2;       # Spring stiffness
+    SPRING_DAMPING = 0.8; # How quickly the spring stops bouncing
+    DAMPING = 0.98;       # Global air resistance
+    GRAVITY = 0.4;        # A single, unified gravity constant
+    REST_LENGTH = 50;
+    PHYSICS_STEPS = 5;
 
     initGooTypes;
 
@@ -70,9 +75,10 @@ onflag {
 }
 
 onkey "space" {
-    add GooBall {x: mouse_x(), y: mouse_y(), xVel: 0, yVel: 0, type: selectedCreationGoo} to goo;
+    add GooBall {x: mouse_x(), y: mouse_y(), type: selectedCreationGoo} to goo;
     repeat maxConnections {
         add 0 to gooConnections;
+        add 0 to gooConnectionLengths;
     }
     lastGooTime = 0;
 }
@@ -148,6 +154,7 @@ proc deleteGooBall id {
     local startIndex = ($id - 1) * maxConnections + 1;
     repeat maxConnections {
         delete gooConnections[startIndex];
+        delete gooConnectionLengths[startIndex];
     }
 
     # Delete the actual gooball from the main list
@@ -167,7 +174,6 @@ proc handleSelection {
             repeat length goo {
                 if DIST(goo[i].x, goo[i].y, mouse_x(), mouse_y()) < 12 {
                     selectedGoo = i;
-                    show selectedGoo;
                 }
                 i++;
             }
@@ -175,6 +181,8 @@ proc handleSelection {
             if goo[selectedGoo].x != mouse_x() or goo[selectedGoo].y != mouse_y() {
                 goo[selectedGoo].x = mouse_x();
                 goo[selectedGoo].y = mouse_y();
+                goo[selectedGoo].xVel = 0;
+                goo[selectedGoo].yVel = 0;
                 findPossibleConnections;
             }
         }
@@ -192,7 +200,6 @@ proc handleSelection {
                     repeat length possibleConnections {
                         if possibleConnections[i].id != selectedGoo {
                             addGooConnection selectedGoo, possibleConnections[i].id;
-                            show gooConnections;
                         }
                         i++;
                     }
@@ -206,7 +213,6 @@ proc handleSelection {
 
 proc findPossibleConnections {
     delete possibleConnections;
-    # show possibleConnections;
     i = 1;
     repeat length goo {
         if i != selectedGoo {
@@ -308,11 +314,19 @@ func doesConnectionExist(source, target) {
 
 proc addGooConnection selectedID, connectID, connectOther=false, bypassLimit=false {
     local i = ($selectedID - 1) * maxConnections + 1;
-    repeat gooTypes[goo[$selectedID].type].maxConns + (maxConnections * $bypassLimit) {
+    if $bypassLimit {
+        local amount = maxConnections;
+    } else {
+        local amount = gooTypes[goo[$selectedID].type].maxConns;
+    }
+    repeat amount {
         if gooConnections[i] == $connectID {
             stop_this_script;
         } elif gooConnections[i] == 0 {
             gooConnections[i] = $connectID;
+
+            gooConnectionLengths[i] = DIST(goo[$selectedID].x, goo[$selectedID].y, goo[$connectID].x, goo[$connectID].y);
+
             # connect the other direction
             if not $connectOther {
                 addGooConnection $connectID, $selectedID, connectOther: true, bypassLimit: true;
@@ -324,138 +338,89 @@ proc addGooConnection selectedID, connectID, connectOther=false, bypassLimit=fal
 }
 
 proc gooPhysics {
-    repeat 1 {
-    # Initialize force accumulators
-    delete gooForcesX;
-    delete gooForcesY;
     i = 1;
-    repeat length goo {
-        add 0 to gooForcesX;
-        add 0 to gooForcesY;
-        i++;
-    }
-
-    # Calculate and accumulate spring forces
-    i = 1;
-    repeat length gooConnections {
-        local connectID = gooConnections[i];
-        if connectID > 0 {
-            local gooID = ((i - 1) // maxConnections) + 1;
-
-            local dx = goo[connectID].x - goo[gooID].x;
-            local dy = goo[connectID].y - goo[gooID].y;
-            local dist = DIST(goo[gooID].x, goo[gooID].y, goo[connectID].x, goo[connectID].y);
-
-            if dist > 0 {
-                # Calculate how far the spring is stretched or squished
-                local force = (dist - REST_LENGTH) * SPRING_K;
-
-                # Normalize the direction and accumulate forces
-                local fx = (dx / dist) * force * 0.5;
-                local fy = (dy / dist) * force * 0.5;
-                
-                gooForcesX[gooID] += fx;
-                gooForcesY[gooID] += fy;
-                
-                gooForcesX[connectID] -= fx;
-                gooForcesY[connectID] -= fy;
+    repeat length gooConnectionLengths {
+        if gooConnectionLengths[i] > 0 {
+            if abs(REST_LENGTH - gooConnectionLengths[i]) > 0.01 {
+                gooConnectionLengths[i] += (REST_LENGTH - gooConnectionLengths[i]) / 10;
             }
         }
         i++;
     }
 
-    # Apply accumulated forces to velocities
-    i = 1;
-    repeat length goo {
-        goo[i].xVel += gooForcesX[i];
-        goo[i].yVel += gooForcesY[i];
-        
-        # Clamp velocity to prevent wild oscillation
-        local vel_mag = DIST(0, 0, goo[i].xVel, goo[i].yVel);
-        if vel_mag > 12 {
-            goo[i].xVel = (goo[i].xVel / vel_mag) * 12;
-            goo[i].yVel = (goo[i].yVel / vel_mag) * 12;
+    repeat PHYSICS_STEPS {
+        # 1. Reset forces
+        i = 1;
+        repeat length goo {
+            goo[i].forceX = 0;
+            goo[i].forceY = 0;
+            i++;
         }
-        i++;
-    }
 
-    # Zero out velocities for gooballs on the ground to prevent sliding
-    i = 1;
-    repeat length goo {
-        if goo[i].y <= -150 {
-            goo[i].xVel *= 0.7;
-            goo[i].yVel *= 0.7;
+        # 2. Calculate Spring Forces (Newtonian)
+        i = 1;
+        repeat length gooConnections {
+            local id1 = ((i - 1) // maxConnections) + 1;
+            local id2 = gooConnections[i];
+
+            if id2 > 0 and id2 < id1 {
+                local dx = goo[id2].x - goo[id1].x;
+                local dy = goo[id2].y - goo[id1].y;
+                local dist = sqrt(dx * dx + dy * dy);
+                if dist < 0.1 { dist = 0.1; }
+
+                local currentRestLength = gooConnectionLengths[i];
+                local springForce = (dist - currentRestLength) * SPRING_K;
+
+                # Damping for the SPRING (stops the jitter/oscillation)
+                local relVelX = goo[id2].xVel - goo[id1].xVel;
+                local relVelY = goo[id2].yVel - goo[id1].yVel;
+                local relVel = (relVelX * dx / dist) + (relVelY * dy / dist);
+                local dampForce = relVel * SPRING_DAMPING;
+
+                local totalForce = springForce + dampForce;
+
+                local fx = totalForce * dx / dist;
+                local fy = totalForce * dy / dist;
+
+                goo[id1].forceX += fx;
+                goo[id1].forceY += fy;
+                goo[id2].forceX -= fx;
+                goo[id2].forceY -= fy;
+            }
+            i++;
         }
-        i++;
-    }
 
-    # Apply gravity, damping, and movement
-    i = 1;
-    repeat length goo {
-        # Don't apply physics to the goo we are dragging!
-        if i != selectedGoo {
-            # Count connections for this goo
-            local connCount = 0;
-            local connIndex = (i - 1) * maxConnections + 1;
-            local j = 0;
-            repeat maxConnections {
-                if gooConnections[connIndex + j] > 0 {
-                    connCount++;
+        # 3. Apply Forces and Movement
+        i = 1;
+        repeat length goo {
+            if i != selectedGoo {
+                # Apply spring forces and gravity
+                # (Notice gravity is also divided by steps)
+                goo[i].xVel += goo[i].forceX / PHYSICS_STEPS;
+                goo[i].yVel += (goo[i].forceY - GRAVITY) / PHYSICS_STEPS;
+
+                # MOVE the goo
+                goo[i].x += goo[i].xVel / PHYSICS_STEPS;
+                goo[i].y += goo[i].yVel / PHYSICS_STEPS;
+
+                # Ground Collision
+                if goo[i].y < -150 {
+                    goo[i].y = -150;
+                    goo[i].yVel *= -0.3;
+                    goo[i].xVel *= 0.5;
                 }
-                j++;
             }
-
-            # Gravity - stronger for loosely connected goos
-            if connCount < 2 {
-                goo[i].yVel -= 3;  # Fast fall for loose goos
-            } else {
-                goo[i].yVel -= 0.5;  # Light gravity for connected goos
-            }
-
-            # Extra gravity for falling goos to accelerate collapses
-            if goo[i].yVel < -0.5 {
-                goo[i].yVel -= 1;
-            } elif goo[i].yVel < -0.6 {
-                goo[i].yVel -= 2;
-            } elif goo[i].yVel < -0.7 {
-                goo[i].yVel -= 2.5;
-            } elif goo[i].yVel < -0.8 {
-                goo[i].yVel -= 3.5;
-            }
-
-            # Damping
-            goo[i].xVel *= DAMPING;
-            goo[i].yVel *= DAMPING;
-            
-            if abs(goo[i].xVel) < 0.1 {
-                goo[i].xVel *= 0.7;
-            }
-            if abs(goo[i].yVel) < 0.1 {
-                goo[i].yVel *= 0.7;
-            }
-
-            # Move the goo
-            goo[i].x += goo[i].xVel;
-            goo[i].y += goo[i].yVel;
-
-            # Floor collision
-            if goo[i].y <= -150 {
-                goo[i].y = -150;
-                if goo[i].yVel < -1 { # Only bounce if falling with speed
-                    goo[i].yVel *= -0.5;
-                    goo[i].xVel *= 0.8;
-                } else {
-                    goo[i].yVel = 0;
-                    goo[i].xVel *= 0.7;
-                }            
-            }
-        } else {
-            # If we are holding it, kill its velocity so it doesn't fly away when released
-            goo[i].xVel = 0;
-            goo[i].yVel = 0;
+            i++;
         }
-        i++;
     }
+
+    # 4. Global Air Resistance (Apply ONLY ONCE per frame)
+    i = 1;
+    repeat length goo {
+        goo[i].xVel *= DAMPING;
+        goo[i].yVel *= DAMPING;
+        i++;
     }
 }
 
