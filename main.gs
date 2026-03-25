@@ -190,8 +190,6 @@ proc handleSelection {
         if selectedGoo > 0 {
             findPossibleConnections;
             if isValidStrandConnection {
-                # log "adding conn, valid";
-                # log strandConnection.id1 & " " & strandConnection.id2;
                 addGooConnection strandConnection.id1, strandConnection.id2, bypassLimit: true;
                 deleteGooBall selectedGoo;
             } else {
@@ -265,12 +263,6 @@ proc findPossibleConnections {
         delete possibleConnections;
     }
 
-    # i = 1;
-    # repeat length possibleConnections {
-    #     add  to connectionLengths
-    #     i++;
-    # }
-
     checkForStrandConnection;
 }
 
@@ -284,7 +276,6 @@ proc checkForStrandConnection {
     local GooConn p1 = possibleConnections[2];
 
     if p0.distance < REST_LENGTH * 0.8 and p1.distance < REST_LENGTH * 0.8 {
-        # log DIST(goo[p0.id].x, goo[p0.id].y, goo[p1.id].x, goo[p1.id].y);
         if abs (REST_LENGTH - DIST(goo[p0.id].x, goo[p0.id].y, goo[p1.id].x, goo[p1.id].y)) < 25 {
             if not doesConnectionExist(p0.id, p1.id) {
                 isValidStrandConnection = true;
@@ -312,24 +303,24 @@ func doesConnectionExist(source, target) {
     return false;
 }
 
-proc addGooConnection selectedID, connectID, connectOther=false, bypassLimit=false {
-    local i = ($selectedID - 1) * maxConnections + 1;
+proc addGooConnection goo1, goo2, connectOther=false, bypassLimit=false {
+    local i = ($goo1 - 1) * maxConnections + 1;
     if $bypassLimit {
         local amount = maxConnections;
     } else {
-        local amount = gooTypes[goo[$selectedID].type].maxConns;
+        local amount = gooTypes[goo[$goo1].type].maxConns;
     }
     repeat amount {
-        if gooConnections[i] == $connectID {
+        if gooConnections[i] == $goo2 {
             stop_this_script;
         } elif gooConnections[i] == 0 {
-            gooConnections[i] = $connectID;
+            gooConnections[i] = $goo2;
 
-            gooConnectionLengths[i] = DIST(goo[$selectedID].x, goo[$selectedID].y, goo[$connectID].x, goo[$connectID].y);
+            gooConnectionLengths[i] = DIST(goo[$goo1].x, goo[$goo1].y, goo[$goo2].x, goo[$goo2].y);
 
             # connect the other direction
             if not $connectOther {
-                addGooConnection $connectID, $selectedID, connectOther: true, bypassLimit: true;
+                addGooConnection $goo2, $goo1, connectOther: true, bypassLimit: true;
             }
             stop_this_script;
         }
@@ -349,7 +340,7 @@ proc gooPhysics {
     }
 
     repeat PHYSICS_STEPS {
-        # 1. Reset forces
+        # Reset forces
         i = 1;
         repeat length goo {
             goo[i].forceX = 0;
@@ -357,7 +348,7 @@ proc gooPhysics {
             i++;
         }
 
-        # 2. Calculate Spring Forces (Newtonian)
+        # Calculate Spring Forces (Newtonian)
         i = 1;
         repeat length gooConnections {
             local id1 = ((i - 1) // maxConnections) + 1;
@@ -391,7 +382,7 @@ proc gooPhysics {
             i++;
         }
 
-        # 3. Apply Forces and Movement
+        # Apply Forces and Movement
         i = 1;
         repeat length goo {
             if i != selectedGoo {
@@ -415,7 +406,7 @@ proc gooPhysics {
         }
     }
 
-    # 4. Global Air Resistance (Apply ONLY ONCE per frame)
+    # Global Air Resistance (Apply ONLY ONCE per frame)
     i = 1;
     repeat length goo {
         goo[i].xVel *= DAMPING;
