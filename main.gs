@@ -1,4 +1,4 @@
-costumes "assets/blank.svg";
+costumes "assets/hitbox.svg";
 %include std/math
 %include std/list
 
@@ -13,6 +13,8 @@ onflag {
     delete gooConnections;
     delete gooConnectionLengths;
     initConstants;
+
+    set_ghost_effect 100;
 
     # addGoo -25, 0, GooTypes.Black;
     # addGoo 25, 0, GooTypes.Black;
@@ -34,6 +36,8 @@ onflag {
     selectedGoo = 0;
     selectedCreationGoo = GooTypes.Black;
     pen_up;
+
+    scanLevel;
     forever {
         handleSelection;
         gooPhysics;

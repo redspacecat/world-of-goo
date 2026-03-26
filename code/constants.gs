@@ -3,6 +3,7 @@ list gooConnections;
 list GooTypeDef gooTypes;
 list GooConn possibleConnections;
 list gooConnectionLengths;
+list worldGrid;
 
 enum GooTypes {
     Black=1,
@@ -45,13 +46,17 @@ struct Point {
 }
 
 proc initConstants {
-    SPRING_K = 1.2;       # Spring stiffness
+    SPRING_K = 1.25;       # Spring stiffness
     SPRING_DAMPING = 0.8; # How quickly the spring stops bouncing
     DAMPING = 0.98;       # Global air resistance
     GRAVITY = 0.4;        # A single, unified gravity constant
     REST_LENGTH = 50;
-    PHYSICS_STEPS = 5;
+    PHYSICS_STEPS = 3;
     maxConnections = 6;
+
+    GRID_SIZE = 4;          # Size of each collision cell (smaller = more accurate but slower scan)
+    COLS = 480 / GRID_SIZE;  # 480 / GRID_SIZE
+    ROWS = 360 / GRID_SIZE;  # 360 / GRID_SIZE
 
     initGooTypes;
 }

@@ -102,13 +102,26 @@ proc gooPhysics {
                 goo[i].xVel += goo[i].forceX / PHYSICS_STEPS;
                 goo[i].yVel += (goo[i].forceY - GRAVITY) / PHYSICS_STEPS;
 
-                # MOVE the goo
+                # --- X MOVEMENT & COLLISION ---
                 goo[i].x += goo[i].xVel / PHYSICS_STEPS;
-                goo[i].y += goo[i].yVel / PHYSICS_STEPS;
+                
+                local gridX = floor((goo[i].x + 240) / GRID_SIZE) + 1;
+                local gridY = floor((goo[i].y + 180) / GRID_SIZE) + 1;
 
-                # Ground Collision
-                if goo[i].y < -150 {
-                    goo[i].y = -150;
+                if worldGrid[(gridY - 1) * COLS + gridX] == 1 {
+                    goo[i].x -= goo[i].xVel / PHYSICS_STEPS;
+                    goo[i].xVel *= -0.4;
+                    goo[i].yVel *= 0.8;
+                }
+
+                # --- Y MOVEMENT & COLLISION ---
+                goo[i].y += goo[i].yVel / PHYSICS_STEPS;
+                
+                # Recalculate gridY after Y movement
+                gridY = floor((goo[i].y + 180) / GRID_SIZE) + 1;
+
+                if worldGrid[(gridY - 1) * COLS + gridX] == 1 {
+                    goo[i].y -= goo[i].yVel / PHYSICS_STEPS;
                     goo[i].yVel *= -0.4;
                     goo[i].xVel *= 0.5;
                 }
@@ -124,4 +137,33 @@ proc gooPhysics {
         goo[i].yVel *= DAMPING;
         i++;
     }
+}
+
+proc scanLevel {
+    set_size 1;
+    # Initialize the world data list
+    delete worldGrid;
+    repeat COLS * ROWS {
+        add 0 to worldGrid;
+    }
+
+    local row = 1;
+    repeat ROWS {
+        local col = 1;
+        repeat COLS {
+            # Calculate Scratch coordinates from grid indices
+            local x = (col * GRID_SIZE) - 240 - (GRID_SIZE / 2);
+            local y = (row * GRID_SIZE) - 180 - (GRID_SIZE / 2);
+            
+            goto x, y;
+            if touching("world") {
+                # Mark as solid (1)
+                worldGrid[(row - 1) * COLS + col] = 1;
+            }
+            col++;
+        }
+        row++;
+    }
+
+    set_size 100;
 }
