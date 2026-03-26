@@ -1,0 +1,160 @@
+proc handleSelection {
+    if mouse_down() {
+        if selectedGoo == 0 {
+            i = 1;
+            repeat length goo {
+                if DIST(goo[i].x, goo[i].y, mouse_x(), mouse_y()) < 12 {
+                    selectedGoo = i;
+                }
+                i++;
+            }
+        } else {
+            if goo[selectedGoo].x != mouse_x() or goo[selectedGoo].y != mouse_y() {
+                goo[selectedGoo].x = mouse_x();
+                goo[selectedGoo].y = mouse_y();
+                goo[selectedGoo].xVel = 0;
+                goo[selectedGoo].yVel = 0;
+                findPossibleConnections;
+            }
+        }
+    } else {
+        if selectedGoo > 0 {
+            findPossibleConnections;
+            if isValidStrandConnection {
+                addGooConnection strandConnection.id1, strandConnection.id2, bypassLimit: true;
+                deleteGoo selectedGoo;
+            } else {
+                if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
+                    i = 1;
+                    repeat length possibleConnections {
+                        if possibleConnections[i].id != selectedGoo {
+                            addGooConnection selectedGoo, possibleConnections[i].id;
+                        }
+                        i++;
+                    }
+                }
+            }
+        }
+        selectedGoo = 0;
+        delete possibleConnections;
+    }
+}
+
+proc findPossibleConnections {
+    delete possibleConnections;
+    i = 1;
+    repeat length goo {
+        if i != selectedGoo {
+            local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
+            if connDistance < REST_LENGTH + 10 {
+                # Detecting if the target connection line crosses through any of the connections
+                local j = 1;
+                local intersects = false;
+                repeat length gooConnections {
+                    if gooConnections[j] > 0 {
+                        if not intersects {
+                            local currentID = ((j - 1) // maxConnections) + 1;
+                            local Point A = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                            local Point B = Point {x: goo[i].x, y: goo[i].y};
+                            local Point C = Point {x: goo[currentID].x, y: goo[currentID].y};
+                            local Point D = Point {x: goo[gooConnections[j]].x, y: goo[gooConnections[j]].y};
+                            if intersect(A, B, C, D) {
+                                intersects = true;
+                            }
+                        }
+                    }
+                    j++;
+                }
+
+                if not intersects {
+                    add GooConn {id: i, distance: connDistance} to possibleConnections;
+                }
+            }
+        }
+        i++;
+    }
+
+    INSERTION_SORT_BY_FIELD(GooConn, possibleConnections, .distance);
+
+    if length possibleConnections >= 3 {
+        # get three closest points and detect if we're inside the triangle that makes
+        local Point A = Point {x: goo[possibleConnections[1].id].x, y: goo[possibleConnections[1].id].y};
+        local Point B = Point {x: goo[possibleConnections[2].id].x, y: goo[possibleConnections[2].id].y};
+        local Point C = Point {x: goo[possibleConnections[3].id].x, y: goo[possibleConnections[3].id].y};
+        if pointInTriangle(Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y}, A, B, C) {
+            delete possibleConnections;
+        }
+    }
+
+    until length possibleConnections <= gooTypes[goo[selectedGoo].type].maxConns {
+        delete possibleConnections["last"];
+    }
+
+    if length possibleConnections < gooTypes[goo[selectedGoo].type].minConns {
+        delete possibleConnections;
+    }
+
+    checkForStrandConnection;
+}
+
+proc checkForStrandConnection {
+    isValidStrandConnection = false;
+    if length possibleConnections != 2 {
+        stop_this_script;
+    }
+
+    local GooConn p0 = possibleConnections[1];
+    local GooConn p1 = possibleConnections[2];
+
+    if p0.distance < REST_LENGTH * 0.8 and p1.distance < REST_LENGTH * 0.8 {
+        if abs (REST_LENGTH - DIST(goo[p0.id].x, goo[p0.id].y, goo[p1.id].x, goo[p1.id].y)) < 25 {
+            if not doesConnectionExist(p0.id, p1.id) {
+                isValidStrandConnection = true;
+                StrandConnection strandConnection = StrandConnection {id1: p0.id, id2: p1.id};
+            }
+        }
+    }
+}
+
+func doesConnectionExist(source, target) {
+    local i = ($source - 1) * maxConnections + 1;
+    repeat maxConnections {
+        if gooConnections[i] == $target {
+            return true;
+        }
+        i++;
+    }
+    local i = ($target - 1) * maxConnections + 1;
+    repeat maxConnections {
+        if gooConnections[i] == $source {
+            return true;
+        }
+        i++;
+    }
+    return false;
+}
+
+proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
+    local i = ($goo1 - 1) * maxConnections + 1;
+    if $bypassLimit {
+        local amount = maxConnections;
+    } else {
+        local amount = gooTypes[goo[$goo1].type].maxConns;
+    }
+    repeat amount {
+        if gooConnections[i] == $goo2 {
+            stop_this_script;
+        } elif gooConnections[i] == 0 {
+            gooConnections[i] = $goo2;
+
+            gooConnectionLengths[i] = DIST(goo[$goo1].x, goo[$goo1].y, goo[$goo2].x, goo[$goo2].y);
+
+            # connect the other direction
+            if not $connectOther {
+                addGooConnection $goo2, $goo1, connectOther: true, bypassLimit: true;
+            }
+            stop_this_script;
+        }
+        i++;
+    }
+}
