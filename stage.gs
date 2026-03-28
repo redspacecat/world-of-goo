@@ -1,1 +1,1 @@
-costumes "assets/cool-world.svg";
+costumes "assets/sky_blue.png";

@@ -1,3 +1,6 @@
+%define TOUCHING_GROUND(gridX, gridY) worldGrid[(gridY - 1) * COLS + gridX] == 1
+%define TOUCHING_GROUND_XY(x, y) worldGrid[((floor((goo[i].y + 180) / GRID_SIZE) + 1) - 1) * COLS + (floor((goo[i].x + 240) / GRID_SIZE) + 1)] == 1
+
 proc addGoo x, y, type {
     add GooBall {x: $x, y: $y, type: $type} to goo;
     repeat maxConnections {
@@ -108,7 +111,7 @@ proc gooPhysics {
                 local gridX = floor((goo[i].x + 240) / GRID_SIZE) + 1;
                 local gridY = floor((goo[i].y + 180) / GRID_SIZE) + 1;
 
-                if worldGrid[(gridY - 1) * COLS + gridX] == 1 {
+                if TOUCHING_GROUND(gridX, gridY) {
                     goo[i].x -= goo[i].xVel / PHYSICS_STEPS;
                     goo[i].xVel *= -0.4;
                     goo[i].yVel *= 0.8;
@@ -120,7 +123,7 @@ proc gooPhysics {
                 # Recalculate gridY after Y movement
                 gridY = floor((goo[i].y + 180) / GRID_SIZE) + 1;
 
-                if worldGrid[(gridY - 1) * COLS + gridX] == 1 {
+                if TOUCHING_GROUND(gridX, gridY) {
                     goo[i].y -= goo[i].yVel / PHYSICS_STEPS;
                     goo[i].yVel *= -0.4;
                     goo[i].xVel *= 0.5;
@@ -140,7 +143,6 @@ proc gooPhysics {
 }
 
 proc scanLevel {
-    set_size 1;
     # Initialize the world data list
     delete worldGrid;
     repeat COLS * ROWS {
@@ -164,6 +166,4 @@ proc scanLevel {
         }
         row++;
     }
-
-    set_size 100;
 }

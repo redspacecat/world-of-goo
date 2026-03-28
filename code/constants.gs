@@ -61,8 +61,12 @@ proc initConstants {
     initGooTypes;
 }
 
+proc addGooType GooTypeDef def {
+    add $def to gooTypes;
+}
+
 proc initGooTypes {
-    add GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false} to gooTypes;
-    add GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
-    add GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 3, minConns: 2, isDetachable: false} to gooTypes;
+    addGooType GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false};
+    addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: false};
+    addGooType GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 4, minConns: 2, isDetachable: false};
 }

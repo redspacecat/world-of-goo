@@ -158,3 +158,30 @@ proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
         i++;
     }
 }
+
+proc removeGooConnection goo1, goo2, removeOther=false, {
+    local i = ($goo1 - 1) * maxConnections + 1;
+    repeat maxConnections {
+        if gooConnections[i] == $goo2 {
+            gooConnections[i] = 0;
+            gooConnectionLengths[i] = 0;
+
+            # remove the other direction
+            if not $removeOther {
+                removeGooConnection $goo2, $goo1, removeOther: true;
+            }
+            stop_this_script;
+        }
+        i++;
+    }
+}
+
+proc removeAllGooConnections goo, {
+    local i = ($goo - 1) * maxConnections + 1;
+    repeat maxConnections {
+        if gooConnections[i] > 0 {
+            removeGooConnection $goo, gooConnections[i];
+        }
+        i++;
+    }
+}
