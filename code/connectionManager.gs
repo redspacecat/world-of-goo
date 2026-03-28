@@ -4,17 +4,36 @@ proc handleSelection {
             i = 1;
             repeat length goo {
                 if DIST(goo[i].x, goo[i].y, mouse_x(), mouse_y()) < 12 {
-                    selectedGoo = i;
+                    if goo[i].state == GooStates.Attached {
+                        if gooTypes[goo[i].type].isDetachable {
+                            selectedGoo = i;
+                            # local Point selectedOldPos = Point {x: mouse_x(), y: mouse_y()};
+                            local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                            stop_this_script;
+                        }
+                    } else {
+                        local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                        selectedGoo = i;
+                        stop_this_script;
+                    }
                 }
                 i++;
             }
         } else {
-            if goo[selectedGoo].x != mouse_x() or goo[selectedGoo].y != mouse_y() {
-                goo[selectedGoo].x = mouse_x();
-                goo[selectedGoo].y = mouse_y();
-                goo[selectedGoo].xVel = 0;
-                goo[selectedGoo].yVel = 0;
-                findPossibleConnections;
+            if selectedOldPos.x != mouse_x() or selectedOldPos.y != mouse_y() {
+                if goo[selectedGoo].state == GooStates.Attached {
+                    if DIST(goo[selectedGoo].x, goo[selectedGoo].y, mouse_x(), mouse_y()) > 10 {
+                        removeAllGooConnections selectedGoo;
+                    }
+                } else {
+                    goo[selectedGoo].x = mouse_x();
+                    goo[selectedGoo].y = mouse_y();
+                    goo[selectedGoo].xVel = 0;
+                    goo[selectedGoo].yVel = 0;
+                    selectedOldPos.x = goo[selectedGoo].x;
+                    selectedOldPos.y = goo[selectedGoo].y;
+                    findPossibleConnections;
+                }
             }
         }
     } else {
@@ -134,6 +153,18 @@ func doesConnectionExist(source, target) {
     return false;
 }
 
+func getGooConnectionCount(id) {
+    local count = 0;
+    local i = ($id - 1) * maxConnections + 1;
+    repeat maxConnections {
+        if gooConnections[i] > 0 {
+            count++;
+        }
+        i++;
+    }
+    return count;
+}
+
 proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
     local i = ($goo1 - 1) * maxConnections + 1;
     if $bypassLimit {
@@ -148,6 +179,10 @@ proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
             gooConnections[i] = $goo2;
 
             gooConnectionLengths[i] = DIST(goo[$goo1].x, goo[$goo1].y, goo[$goo2].x, goo[$goo2].y);
+
+            # set the goo state
+            goo[$goo1].state = GooStates.Attached;
+            goo[$goo2].state = GooStates.Attached;
 
             # connect the other direction
             if not $connectOther {
@@ -170,6 +205,15 @@ proc removeGooConnection goo1, goo2, removeOther=false, {
             if not $removeOther {
                 removeGooConnection $goo2, $goo1, removeOther: true;
             }
+
+            # set the goo state
+            if getGooConnectionCount($goo1) == 0 {
+                goo[$goo1].state = GooStates.Free;
+            }
+            if getGooConnectionCount($goo2) == 0 {
+                goo[$goo2].state = GooStates.Free;
+            }
+
             stop_this_script;
         }
         i++;

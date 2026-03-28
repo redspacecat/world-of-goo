@@ -2,7 +2,7 @@
 %define TOUCHING_GROUND_XY(x, y) worldGrid[((floor((goo[i].y + 180) / GRID_SIZE) + 1) - 1) * COLS + (floor((goo[i].x + 240) / GRID_SIZE) + 1)] == 1
 
 proc addGoo x, y, type {
-    add GooBall {x: $x, y: $y, type: $type} to goo;
+    add GooBall {x: $x, y: $y, type: $type, state: GooStates.Free} to goo;
     repeat maxConnections {
         add 0 to gooConnections;
         add 0 to gooConnectionLengths;

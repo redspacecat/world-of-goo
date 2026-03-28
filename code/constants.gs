@@ -11,6 +11,12 @@ enum GooTypes {
     White=3
 }
 
+enum GooStates {
+    Free=1,
+    Roaming=2,
+    Attached=3
+}
+
 # conn = connection
 struct GooTypeDef {
     maxConns,
@@ -28,6 +34,7 @@ struct GooBall {
     forceX=0,
     forceY=0,
     type=GooTypes.Black,
+    state=1,
 }
 
 struct GooConn {
@@ -66,7 +73,8 @@ proc addGooType GooTypeDef def {
 }
 
 proc initGooTypes {
+    delete gooTypes;
     addGooType GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false};
-    addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: false};
+    addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: true};
     addGooType GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 4, minConns: 2, isDetachable: false};
 }
