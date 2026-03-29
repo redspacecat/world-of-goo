@@ -18,25 +18,25 @@ onflag {
 
     set_ghost_effect 100;
 
-    # addGoo -25, 0, GooTypes.Black;
-    # addGoo 25, 0, GooTypes.Black;
-    # addGoo -25, 50, GooTypes.Black;
-    # addGoo 25, 50, GooTypes.Black;
+    # addGoo -25, 0, GooType.Black;
+    # addGoo 25, 0, GooType.Black;
+    # addGoo -25, 50, GooType.Black;
+    # addGoo 25, 50, GooType.Black;
     # addGooConnection 1, 2, true;
     # addGooConnection 1, 3, true;
     # addGooConnection 1, 4, true;
     # addGooConnection 2, 4, true;
     # addGooConnection 2, 3, true;
     # addGooConnection 3, 4, true;
-    addGoo -25, 0, GooTypes.Black;
-    addGoo 25, 0, GooTypes.Black;
-    addGoo 0, 50, GooTypes.Black;
+    addGoo -25, 0, GooType.Black;
+    addGoo 25, 0, GooType.Black;
+    addGoo 0, 50, GooType.Black;
     addGooConnection 1, 2, true;
     addGooConnection 2, 3, true;
     addGooConnection 3, 1, true;
 
     selectedGoo = 0;
-    selectedCreationGoo = GooTypes.Black;
+    selectedCreationGoo = GooType.Black;
     pen_up;
 
     scanLevel;
@@ -54,11 +54,11 @@ onkey "space" {
 }
 
 onkey "1" {
-    selectedCreationGoo = GooTypes.Black;
+    selectedCreationGoo = GooType.Black;
 }
 onkey "2" {
-    selectedCreationGoo = GooTypes.Green;
+    selectedCreationGoo = GooType.Green;
 }
 onkey "3" {
-    selectedCreationGoo = GooTypes.White;
+    selectedCreationGoo = GooType.White;
 }

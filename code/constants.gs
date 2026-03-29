@@ -8,13 +8,13 @@ list worldGrid;
 # temp lists
 list possibleNeighbors;
 
-enum GooTypes {
+enum GooType {
     Black=1,
     Green=2,
     White=3
 }
 
-enum GooStates {
+enum GooState {
     Free=1,
     Roaming=2,
     Attached=3
@@ -36,7 +36,7 @@ struct GooBall {
     yVel=0,
     forceX=0,
     forceY=0,
-    type=GooTypes.Black,
+    type=GooType.Black,
     state=1,
     sourceNode=0,    # The node it's coming from
     targetNode=0,    # The node it's going to
@@ -73,14 +73,14 @@ proc initConstants {
     COLS = 480 / GRID_SIZE;  # 480 / GRID_SIZE
     ROWS = 360 / GRID_SIZE;  # 360 / GRID_SIZE
 
-    initGooTypes;
+    initGooType;
 }
 
 proc addGooType GooTypeDef def {
     add $def to gooTypes;
 }
 
-proc initGooTypes {
+proc initGooType {
     delete gooTypes;
     addGooType GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false};
     addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: true};

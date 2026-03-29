@@ -2,7 +2,7 @@
 %define TOUCHING_GROUND_XY(xPos, yPos) worldGrid[((floor((yPos + 180) / GRID_SIZE) + 1) - 1) * COLS + (floor((xPos + 240) / GRID_SIZE) + 1)] == 1
 
 proc addGoo x, y, type {
-    add GooBall {x: $x, y: $y, type: $type, state: GooStates.Free} to goo;
+    add GooBall {x: $x, y: $y, type: $type, state: GooState.Free} to goo;
     repeat maxConnections {
         add 0 to gooConnections;
         add 0 to gooConnectionLengths;
@@ -29,14 +29,14 @@ proc deleteGoo id {
     repeat length goo {
         if goo[i].sourceNode == $id {
             goo[i].sourceNode = 0; # Node gone
-            goo[i].state = GooStates.Free; # Fall off strand
+            goo[i].state = GooState.Free; # Fall off strand
         } elif goo[i].sourceNode > $id {
             goo[i].sourceNode--;
         }
         
         if goo[i].targetNode == $id {
             goo[i].targetNode = 0;
-            goo[i].state = GooStates.Free;
+            goo[i].state = GooState.Free;
         } elif goo[i].targetNode > $id {
             goo[i].targetNode--;
         }
@@ -66,7 +66,7 @@ proc updateGooAI {
     repeat length goo {
         # Only process AI for gooballs NOT being held
         if i != selectedGoo {
-            if goo[i].state == GooStates.Free {
+            if goo[i].state == GooState.Free {
                 # Rolling, only when on gorund
                 if TOUCHING_GROUND_XY(goo[i].x, goo[i].y - 2) {
                     goo[i].roamTimer--;
@@ -83,12 +83,12 @@ proc updateGooAI {
                 if TICK % 15 == 0 {
                     local j = 1;
                     repeat length goo {
-                        if i != j and goo[j].state == GooStates.Attached {
+                        if i != j and goo[j].state == GooState.Attached {
                             if DIST(goo[i].x, goo[i].y, goo[j].x, goo[j].y) < 12 {
                                 # Find a neighbor to climb toward
                                 local neighbor = getRoamingNeighbor(j, 0);
                                 if neighbor > 0 {
-                                    goo[i].state = GooStates.Roaming;
+                                    goo[i].state = GooState.Roaming;
                                     goo[i].sourceNode = j;
                                     goo[i].targetNode = neighbor;
                                     goo[i].climbDist = 0;
@@ -100,14 +100,14 @@ proc updateGooAI {
                         j++;
                     }
                 }
-            } elif goo[i].state == GooStates.Roaming {
+            } elif goo[i].state == GooState.Roaming {
                 # Climbing logic
                 local sID = goo[i].sourceNode;
                 local tID = goo[i].targetNode;
 
                 # Fallback if nodes are destroyed or detached
-                if sID == 0 or tID == 0 or goo[sID].state != GooStates.Attached or goo[tID].state != GooStates.Attached {
-                    goo[i].state = GooStates.Free;
+                if sID == 0 or tID == 0 or goo[sID].state != GooState.Attached or goo[tID].state != GooState.Attached {
+                    goo[i].state = GooState.Free;
                 } else {
                     local totalDist = DIST(goo[sID].x, goo[sID].y, goo[tID].x, goo[tID].y);
                     
@@ -227,7 +227,7 @@ proc gooPhysics {
         # Apply Forces and Movement
         i = 1;
         repeat length goo {
-            if i != selectedGoo and goo[i].state != GooStates.Roaming {
+            if i != selectedGoo and goo[i].state != GooState.Roaming {
                 # Apply spring forces and gravity
                 # (Notice gravity is also divided by steps)
                 goo[i].xVel += goo[i].forceX / PHYSICS_STEPS;
@@ -245,7 +245,7 @@ proc gooPhysics {
                     goo[i].yVel *= 0.8;
 
                     # Turn around if we hit a wall
-                    if goo[i].state == GooStates.Free {
+                    if goo[i].state == GooState.Free {
                         goo[i].moveDir = 1 - goo[i].moveDir;
                     }
                 }
@@ -260,7 +260,7 @@ proc gooPhysics {
                 if TOUCHING_GROUND(gridX, gridY) {
                     goo[i].y -= goo[i].yVel / PHYSICS_STEPS;
                     goo[i].yVel *= -0.4;
-                    if goo[i].state == GooStates.Free {
+                    if goo[i].state == GooState.Free {
                         goo[i].xVel *= 0.85;
                     } else {
                         goo[i].xVel *= 0.5;

@@ -4,7 +4,7 @@ proc handleSelection {
             i = 1;
             repeat length goo {
                 if DIST(goo[i].x, goo[i].y, mouse_x(), mouse_y()) < 12 {
-                    if goo[i].state == GooStates.Attached {
+                    if goo[i].state == GooState.Attached {
                         if gooTypes[goo[i].type].isDetachable {
                             selectedGoo = i;
                             # local Point selectedOldPos = Point {x: mouse_x(), y: mouse_y()};
@@ -21,13 +21,13 @@ proc handleSelection {
             }
         } else {
             if selectedOldPos.x != mouse_x() or selectedOldPos.y != mouse_y() {
-                if goo[selectedGoo].state == GooStates.Attached {
+                if goo[selectedGoo].state == GooState.Attached {
                     if DIST(goo[selectedGoo].x, goo[selectedGoo].y, mouse_x(), mouse_y()) > 10 {
                         removeAllGooConnections selectedGoo;
-                        goo[selectedGoo].state = GooStates.Free;
+                        goo[selectedGoo].state = GooState.Free;
                     }
                 } else {
-                    goo[selectedGoo].state = GooStates.Free;
+                    goo[selectedGoo].state = GooState.Free;
                     goo[selectedGoo].x = mouse_x();
                     goo[selectedGoo].y = mouse_y();
                     goo[selectedGoo].xVel = 0;
@@ -65,7 +65,7 @@ proc findPossibleConnections {
     delete possibleConnections;
     i = 1;
     repeat length goo {
-        if i != selectedGoo and goo[i].state == GooStates.Attached {
+        if i != selectedGoo and goo[i].state == GooState.Attached {
             local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
             if connDistance < REST_LENGTH + 10 {
                 # Detecting if the target connection line crosses through any of the connections
@@ -193,8 +193,8 @@ proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
             gooConnectionLengths[i] = DIST(goo[$goo1].x, goo[$goo1].y, goo[$goo2].x, goo[$goo2].y);
 
             # set the goo state
-            goo[$goo1].state = GooStates.Attached;
-            goo[$goo2].state = GooStates.Attached;
+            goo[$goo1].state = GooState.Attached;
+            goo[$goo2].state = GooState.Attached;
 
             # connect the other direction
             if not $connectOther {
@@ -220,10 +220,10 @@ proc removeGooConnection goo1, goo2, removeOther=false, {
 
             # set the goo state
             if getGooConnectionCount($goo1) == 0 {
-                goo[$goo1].state = GooStates.Free;
+                goo[$goo1].state = GooState.Free;
             }
             if getGooConnectionCount($goo2) == 0 {
-                goo[$goo2].state = GooStates.Free;
+                goo[$goo2].state = GooState.Free;
             }
 
             stop_this_script;

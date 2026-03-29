@@ -28,7 +28,7 @@ proc renderGoo {
     set_pen_size 15;
     i = 1;
     repeat length goo {
-        if goo[i].state != GooStates.Roaming {
+        if goo[i].state != GooState.Roaming {
             set_pen_color gooTypes[goo[i].type].gooColor;
             goto goo[i].x, goo[i].y;
             pen_down;
@@ -40,7 +40,7 @@ proc renderGoo {
     # render roaming gooballs on top of other ones
     i = 1;
     repeat length goo {
-        if goo[i].state == GooStates.Roaming {
+        if goo[i].state == GooState.Roaming {
             set_pen_color gooTypes[goo[i].type].gooColor;
             goto goo[i].x, goo[i].y;
             pen_down;
