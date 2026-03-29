@@ -27,6 +27,7 @@ proc handleSelection {
                         goo[selectedGoo].state = GooStates.Free;
                     }
                 } else {
+                    goo[selectedGoo].state = GooStates.Free;
                     goo[selectedGoo].x = mouse_x();
                     goo[selectedGoo].y = mouse_y();
                     goo[selectedGoo].xVel = 0;
@@ -65,29 +66,33 @@ proc findPossibleConnections {
     i = 1;
     repeat length goo {
         if i != selectedGoo and goo[i].state == GooStates.Attached {
-            local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
-            if connDistance < REST_LENGTH + 10 {
-                # Detecting if the target connection line crosses through any of the connections
-                local j = 1;
-                local intersects = false;
-                repeat length gooConnections {
-                    if gooConnections[j] > 0 {
-                        if not intersects {
-                            local currentID = ((j - 1) // maxConnections) + 1;
-                            local Point A = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
-                            local Point B = Point {x: goo[i].x, y: goo[i].y};
-                            local Point C = Point {x: goo[currentID].x, y: goo[currentID].y};
-                            local Point D = Point {x: goo[gooConnections[j]].x, y: goo[gooConnections[j]].y};
-                            if intersect(A, B, C, D) {
-                                intersects = true;
+
+            # Ensure the target gooball has room for a new connection
+            if getGooConnectionCount(i) < maxConnections {
+                local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
+                if connDistance < REST_LENGTH + 10 {
+                    # Detecting if the target connection line crosses through any of the connections
+                    local j = 1;
+                    local intersects = false;
+                    repeat length gooConnections {
+                        if gooConnections[j] > 0 {
+                            if not intersects {
+                                local currentID = ((j - 1) // maxConnections) + 1;
+                                local Point A = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                                local Point B = Point {x: goo[i].x, y: goo[i].y};
+                                local Point C = Point {x: goo[currentID].x, y: goo[currentID].y};
+                                local Point D = Point {x: goo[gooConnections[j]].x, y: goo[gooConnections[j]].y};
+                                if intersect(A, B, C, D) {
+                                    intersects = true;
+                                }
                             }
                         }
+                        j++;
                     }
-                    j++;
-                }
 
-                if not intersects {
-                    add GooConn {id: i, distance: connDistance} to possibleConnections;
+                    if not intersects {
+                        add GooConn {id: i, distance: connDistance} to possibleConnections;
+                    }
                 }
             }
         }

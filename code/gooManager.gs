@@ -24,6 +24,25 @@ proc deleteGoo id {
         i++;
     }
 
+    # Update roaming goo references
+    i = 1;
+    repeat length goo {
+        if goo[i].sourceNode == $id {
+            goo[i].sourceNode = 0; # Node gone
+            goo[i].state = GooStates.Free; # Fall off strand
+        } elif goo[i].sourceNode > $id {
+            goo[i].sourceNode--;
+        }
+        
+        if goo[i].targetNode == $id {
+            goo[i].targetNode = 0;
+            goo[i].state = GooStates.Free;
+        } elif goo[i].targetNode > $id {
+            goo[i].targetNode--;
+        }
+        i++;
+    }
+
     # Remove the deleted goo's connection slots from the gooConnections list
     local startIndex = ($id - 1) * maxConnections + 1;
     repeat maxConnections {
@@ -234,7 +253,8 @@ proc gooPhysics {
                 # --- Y MOVEMENT & COLLISION ---
                 goo[i].y += goo[i].yVel / PHYSICS_STEPS;
                 
-                # Recalculate gridY after Y movement
+                # Recalculate gridX and gridY after Y movement
+                gridX = floor((goo[i].x + 240) / GRID_SIZE) + 1;
                 gridY = floor((goo[i].y + 180) / GRID_SIZE) + 1;
 
                 if TOUCHING_GROUND(gridX, gridY) {
