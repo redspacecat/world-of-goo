@@ -5,6 +5,9 @@ list GooConn possibleConnections;
 list gooConnectionLengths;
 list worldGrid;
 
+# temp lists
+list possibleNeighbors;
+
 enum GooTypes {
     Black=1,
     Green=2,
@@ -35,6 +38,11 @@ struct GooBall {
     forceY=0,
     type=GooTypes.Black,
     state=1,
+    sourceNode=0,    # The node it's coming from
+    targetNode=0,    # The node it's going to
+    climbDist=0,     # Pixels traveled along the current strand
+    roamTimer=0,      # Timer for random movements
+    moveDir=1
 }
 
 struct GooConn {

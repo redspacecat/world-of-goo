@@ -14,6 +14,8 @@ onflag {
     delete gooConnectionLengths;
     initConstants;
 
+    TICK = 0;
+
     set_ghost_effect 100;
 
     # addGoo -25, 0, GooTypes.Black;
@@ -40,8 +42,10 @@ onflag {
     scanLevel;
     forever {
         handleSelection;
+        updateGooAI;
         gooPhysics;
         renderGoo;
+        TICK++;
     }
 }
 

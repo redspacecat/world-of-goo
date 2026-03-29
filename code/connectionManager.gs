@@ -24,6 +24,7 @@ proc handleSelection {
                 if goo[selectedGoo].state == GooStates.Attached {
                     if DIST(goo[selectedGoo].x, goo[selectedGoo].y, mouse_x(), mouse_y()) > 10 {
                         removeAllGooConnections selectedGoo;
+                        goo[selectedGoo].state = GooStates.Free;
                     }
                 } else {
                     goo[selectedGoo].x = mouse_x();
@@ -63,7 +64,7 @@ proc findPossibleConnections {
     delete possibleConnections;
     i = 1;
     repeat length goo {
-        if i != selectedGoo {
+        if i != selectedGoo and goo[i].state == GooStates.Attached {
             local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
             if connDistance < REST_LENGTH + 10 {
                 # Detecting if the target connection line crosses through any of the connections
