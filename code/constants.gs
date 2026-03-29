@@ -65,7 +65,7 @@ proc initConstants {
     SPRING_DAMPING = 0.8; # How quickly the spring stops bouncing
     DAMPING = 0.98;       # Global air resistance
     GRAVITY = 0.4;        # A single, unified gravity constant
-    REST_LENGTH = 50;
+    REST_LENGTH = 60;
     PHYSICS_STEPS = 3;
     maxConnections = 6;
 
