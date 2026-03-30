@@ -4,8 +4,11 @@ proc renderGoo {
     set_pen_size 5;
     i = 1;
     repeat length gooConnections {
-        if gooConnections[i] > 0 and gooConnections[i] < ((i - 1) // maxConnections) + 1 {
-            drawConnection ((i - 1) // maxConnections) + 1, gooConnections[i];
+        local currentDrawID = ((i - 1) // maxConnections) + 1;
+        if gooConnections[i] > 0 and gooConnections[i] < currentDrawID {
+            if IS_GOO_ONSCREEN(currentDrawID) or IS_GOO_ONSCREEN(gooConnections[i]) {
+                drawConnection currentDrawID, gooConnections[i];
+            }
         }
         i++;
     }
@@ -18,8 +21,7 @@ proc renderGoo {
         } else {
             i = 1;
             repeat length possibleConnections {
-                local targetGoo = possibleConnections[i].id;
-                drawConnection targetGoo, selectedGoo, false;
+                drawConnection possibleConnections[i].id, selectedGoo, false;
                 i++;
             }
         }
@@ -28,11 +30,13 @@ proc renderGoo {
     set_pen_size 15;
     i = 1;
     repeat length goo {
-        if goo[i].state != GooState.Roaming {
-            set_pen_color gooTypes[goo[i].type].gooColor;
-            goto goo[i].x, goo[i].y;
-            pen_down;
-            pen_up;
+        if IS_GOO_ONSCREEN(i) {
+            if goo[i].state != GooState.Roaming {
+                set_pen_color gooTypes[goo[i].type].gooColor;
+                GOTO(goo[i].x, goo[i].y);
+                pen_down;
+                pen_up;
+            }
         }
         i++;
     }
@@ -40,11 +44,13 @@ proc renderGoo {
     # render roaming gooballs on top of other ones
     i = 1;
     repeat length goo {
-        if goo[i].state == GooState.Roaming {
-            set_pen_color gooTypes[goo[i].type].gooColor;
-            goto goo[i].x, goo[i].y;
-            pen_down;
-            pen_up;
+        if IS_GOO_ONSCREEN(i) {
+            if goo[i].state == GooState.Roaming {
+                set_pen_color gooTypes[goo[i].type].gooColor;
+                GOTO(goo[i].x, goo[i].y);
+                pen_down;
+                pen_up;
+            }
         }
         i++;
     }
@@ -54,8 +60,8 @@ proc drawConnection gooID, connectID, changeColor=true {
     if $changeColor {
         set_pen_color gooTypes[goo[$gooID].type].connColor;
     }
-    goto goo[$gooID].x, goo[$gooID].y;
+    GOTO(goo[$gooID].x, goo[$gooID].y);
     pen_down;
-    goto goo[$connectID].x, goo[$connectID].y;
+    GOTO(goo[$connectID].x, goo[$connectID].y);
     pen_up;
 }

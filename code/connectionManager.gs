@@ -3,11 +3,11 @@ proc handleSelection {
         if selectedGoo == 0 {
             i = 1;
             repeat length goo {
-                if DIST(goo[i].x, goo[i].y, mouse_x(), mouse_y()) < 12 {
+                if DIST(goo[i].x, goo[i].y, MOUSE_X, MOUSE_Y) < 12 {
                     if goo[i].state == GooState.Attached {
                         if gooTypes[goo[i].type].isDetachable {
                             selectedGoo = i;
-                            # local Point selectedOldPos = Point {x: mouse_x(), y: mouse_y()};
+                            # local Point selectedOldPos = Point {x: MOUSE_X, y: MOUSE_Y};
                             local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
                             stop_this_script;
                         }
@@ -20,16 +20,16 @@ proc handleSelection {
                 i++;
             }
         } else {
-            if selectedOldPos.x != mouse_x() or selectedOldPos.y != mouse_y() {
+            if selectedOldPos.x != MOUSE_X or selectedOldPos.y != MOUSE_Y {
                 if goo[selectedGoo].state == GooState.Attached {
-                    if DIST(goo[selectedGoo].x, goo[selectedGoo].y, mouse_x(), mouse_y()) > 10 {
+                    if DIST(goo[selectedGoo].x, goo[selectedGoo].y, MOUSE_X, MOUSE_Y) > 10 {
                         removeAllGooConnections selectedGoo;
                         goo[selectedGoo].state = GooState.Free;
                     }
                 } else {
                     goo[selectedGoo].state = GooState.Free;
-                    goo[selectedGoo].x = mouse_x();
-                    goo[selectedGoo].y = mouse_y();
+                    goo[selectedGoo].x = MOUSE_X;
+                    goo[selectedGoo].y = MOUSE_Y;
                     goo[selectedGoo].xVel = 0;
                     goo[selectedGoo].yVel = 0;
                     selectedOldPos.x = goo[selectedGoo].x;

@@ -1,6 +1,3 @@
-%define TOUCHING_GROUND(gridX, gridY) worldGrid[(gridY - 1) * COLS + gridX] == 1
-%define TOUCHING_GROUND_XY(xPos, yPos) worldGrid[((floor((yPos + 180) / GRID_SIZE) + 1) - 1) * COLS + (floor((xPos + 240) / GRID_SIZE) + 1)] == 1
-
 proc addGoo x, y, type {
     add GooBall {x: $x, y: $y, type: $type, state: GooState.Free} to goo;
     repeat maxConnections {
@@ -236,8 +233,8 @@ proc gooPhysics {
                 # --- X MOVEMENT & COLLISION ---
                 goo[i].x += goo[i].xVel / PHYSICS_STEPS;
                 
-                local gridX = floor((goo[i].x + 240) / GRID_SIZE) + 1;
-                local gridY = floor((goo[i].y + 180) / GRID_SIZE) + 1;
+                local gridX = floor((goo[i].x + WORLD_OFFSET_X) / GRID_SIZE) + 1;
+                local gridY = floor((goo[i].y + WORLD_OFFSET_Y) / GRID_SIZE) + 1;
 
                 if TOUCHING_GROUND(gridX, gridY) {
                     goo[i].x -= goo[i].xVel / PHYSICS_STEPS;
@@ -254,8 +251,8 @@ proc gooPhysics {
                 goo[i].y += goo[i].yVel / PHYSICS_STEPS;
                 
                 # Recalculate gridX and gridY after Y movement
-                gridX = floor((goo[i].x + 240) / GRID_SIZE) + 1;
-                gridY = floor((goo[i].y + 180) / GRID_SIZE) + 1;
+                gridX = floor((goo[i].x + WORLD_OFFSET_X) / GRID_SIZE) + 1;
+                gridY = floor((goo[i].y + WORLD_OFFSET_Y) / GRID_SIZE) + 1;
 
                 if TOUCHING_GROUND(gridX, gridY) {
                     goo[i].y -= goo[i].yVel / PHYSICS_STEPS;
@@ -280,25 +277,64 @@ proc gooPhysics {
     }
 }
 
-proc scanLevel {
-    # Initialize the world data list
+nowarp proc scanLevel {
+    switch_costume "hitbox";
+    set_ghost_effect 100;
+    show;
+
+    fillWorld;
+
+    local chunkCols = 480 / GRID_SIZE;
+    local chunkRows = 360 / GRID_SIZE;
+    local chunksX = LEVEL_WIDTH / 480;
+    local chunksY = LEVEL_HEIGHT / 360;
+
+    local cy = 0;
+    repeat chunksY {
+        local cx = 0;
+        repeat chunksX {
+            # Move the camera in 480/360 increments
+            # Chunk 0,0 is at Scroll 0,0 (the origin)
+            SCROLL_X = cx * 480;
+            SCROLL_Y = cy * 360;
+            
+            # Update the 'world' sprite position so it's under the scanner
+            broadcast_and_wait "display_world";
+
+            scanOneScreen cx, cy, chunkRows, chunkCols;
+            cx++;
+        }
+        cy++;
+    }
+
+    # Reset camera to origin
+    SCROLL_X = 0;
+    SCROLL_Y = 0;
+    broadcast_and_wait "display_world";
+}
+
+proc fillWorld {
     delete worldGrid;
     repeat COLS * ROWS {
         add 0 to worldGrid;
     }
+}
 
+proc scanOneScreen cx, cy, chunkRows, chunkCols {
     local row = 1;
-    repeat ROWS {
+    repeat $chunkRows {
         local col = 1;
-        repeat COLS {
-            # Calculate Scratch coordinates from grid indices
-            local x = (col * GRID_SIZE) - 240 - (GRID_SIZE / 2);
-            local y = (row * GRID_SIZE) - 180 - (GRID_SIZE / 2);
+        repeat $chunkCols {
+            # Standard Scratch screen-space coordinates
+            local screenX = (col * GRID_SIZE) - 240 - (GRID_SIZE / 2);
+            local screenY = (row * GRID_SIZE) - 180 - (GRID_SIZE / 2);
             
-            goto x, y;
+            goto screenX, screenY;
             if touching("world") {
-                # Mark as solid (1)
-                worldGrid[(row - 1) * COLS + col] = 1;
+                # Map the local screen scan to the global worldGrid index
+                local absoluteCol = ($cx * $chunkCols) + col;
+                local absoluteRow = ($cy * $chunkRows) + row;
+                worldGrid[(absoluteRow - 1) * COLS + absoluteCol] = 1;
             }
             col++;
         }

@@ -70,8 +70,15 @@ proc initConstants {
     maxConnections = 6;
 
     GRID_SIZE = 4;          # Size of each collision cell (smaller = more accurate but slower scan)
-    COLS = 480 / GRID_SIZE;  # 480 / GRID_SIZE
-    ROWS = 360 / GRID_SIZE;  # 360 / GRID_SIZE
+    LEVEL_WIDTH = 480 * 2; 
+    LEVEL_HEIGHT = 360 * 2; 
+    
+    COLS = LEVEL_WIDTH / GRID_SIZE;
+    ROWS = LEVEL_HEIGHT / GRID_SIZE;
+    
+    # The math offsets to shift (0,0) to the bottom left of the world
+    WORLD_OFFSET_X = 240;
+    WORLD_OFFSET_Y = 180;
 
     initGooType;
 }
