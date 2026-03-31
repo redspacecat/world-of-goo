@@ -29,12 +29,47 @@ proc handleSelection {
                         goo[selectedGoo].state = GooState.Free;
                     }
                 } else {
-                    local Point pointPosDiff = Point {x: MOUSE_X - oldMousePos.x, y: MOUSE_Y - oldMousePos.y};
                     goo[selectedGoo].state = GooState.Free;
-                    goo[selectedGoo].x = MOUSE_X;
-                    goo[selectedGoo].y = MOUSE_Y;
-                    goo[selectedGoo].xVel = pointPosDiff.x;
-                    goo[selectedGoo].yVel = pointPosDiff.y;
+                    local dx = MOUSE_X - goo[selectedGoo].x;
+                    local dy = MOUSE_Y - goo[selectedGoo].y;
+                    local dist = sqrt(dx * dx + dy * dy);
+
+                    local preMoveX = goo[selectedGoo].x;
+                    local preMoveY = goo[selectedGoo].y;
+
+                    # Move a fraction of the distance for easing/zipping
+                    local moveDist = dist / 3;
+
+                    if dist > 0 {
+                        local steps = ceil(moveDist);
+                        local stepX = (dx / dist) * (moveDist / steps);
+                        local stepY = (dy / dist) * (moveDist / steps);
+                        
+                        local s = 1;
+                        repeat steps {
+                            local nextX = goo[selectedGoo].x + stepX;
+                            local nextY = goo[selectedGoo].y + stepY;
+                            
+                            if not TOUCHING_GROUND_XY(nextX, nextY) {
+                                goo[selectedGoo].x = nextX;
+                                goo[selectedGoo].y = nextY;
+                            } else {
+                                s = steps; # Wall hit
+                            }
+                            s++;
+                        }
+                    }
+
+                    # Calculate velocity based on actual movement
+                    goo[selectedGoo].xVel = goo[selectedGoo].x - preMoveX;
+                    goo[selectedGoo].yVel = goo[selectedGoo].y - preMoveY;
+
+                    selectedOldPos.x = goo[selectedGoo].x;
+                    selectedOldPos.y = goo[selectedGoo].y;
+                    findPossibleConnections;
+
+                    oldMousePos.x = MOUSE_X;
+                    oldMousePos.y = MOUSE_Y;
                     selectedOldPos.x = goo[selectedGoo].x;
                     selectedOldPos.y = goo[selectedGoo].y;
                     findPossibleConnections;
