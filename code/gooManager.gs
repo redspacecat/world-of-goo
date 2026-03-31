@@ -77,27 +77,20 @@ proc updateGooAI {
                 }
 
                 # Climbing detection
-                if TICK % 5 == 0 {
+                if TICK % 15 == 0 {
                     local j = 1;
                     repeat length goo {
                         if i != j and goo[j].state == GooState.Attached {
-                            local distToNode = DIST(goo[i].x, goo[i].y, goo[j].x, goo[j].y);
-                            
-                            if distToNode < 15 {
-                                local pullStrength = 0.5; 
-                                goo[i].xVel += (goo[j].x - goo[i].x) * pullStrength;
-                                goo[i].yVel += (goo[j].y - goo[i].y) * pullStrength;
-
-                                if distToNode < 5 {
-                                    local neighbor = getRoamingNeighbor(j, 0);
-                                    if neighbor > 0 {
-                                        goo[i].state = GooState.Roaming;
-                                        goo[i].sourceNode = j;
-                                        goo[i].targetNode = neighbor;
-                                        goo[i].climbDist = 0;
-                                        goo[i].xVel = 0;
-                                        goo[i].yVel = 0;
-                                    }
+                            if DIST(goo[i].x, goo[i].y, goo[j].x, goo[j].y) < 12 {
+                                # Find a neighbor to climb toward
+                                local neighbor = getRoamingNeighbor(j, 0);
+                                if neighbor > 0 {
+                                    goo[i].state = GooState.Roaming;
+                                    goo[i].sourceNode = j;
+                                    goo[i].targetNode = neighbor;
+                                    goo[i].climbDist = 0;
+                                    goo[i].xVel = 0;
+                                    goo[i].yVel = 0;
                                 }
                             }
                         }
