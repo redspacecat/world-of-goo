@@ -37,7 +37,7 @@ struct GooBall {
     forceX=0,
     forceY=0,
     type=GooType.Black,
-    state=1,
+    state=GooState.Free,
     sourceNode=0,    # The node it's coming from
     targetNode=0,    # The node it's going to
     climbDist=0,     # Pixels traveled along the current strand

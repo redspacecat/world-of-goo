@@ -16,6 +16,7 @@ costumes "assets/hitbox.svg", "assets/renderbox.svg";
 %include code/camera
 %include code/gooManager
 %include code/connectionManager
+%include code/levels
 
 onflag {
     delete goo;
@@ -26,23 +27,9 @@ onflag {
     TICK = 0;
     SCROLL_X = 0;
     SCROLL_Y = 0;
+    LEVEL_NUM = 1;
 
-    # addGoo -25, 0, GooType.Black;
-    # addGoo 25, 0, GooType.Black;
-    # addGoo -25, 50, GooType.Black;
-    # addGoo 25, 50, GooType.Black;
-    # addGooConnection 1, 2, true;
-    # addGooConnection 1, 3, true;
-    # addGooConnection 1, 4, true;
-    # addGooConnection 2, 4, true;
-    # addGooConnection 2, 3, true;
-    # addGooConnection 3, 4, true;
-    addGoo -25, 0, GooType.Black;
-    addGoo 25, 0, GooType.Black;
-    addGoo 0, 50, GooType.Black;
-    addGooConnection 1, 2, true;
-    addGooConnection 2, 3, true;
-    addGooConnection 3, 1, true;
+    loadLevel(LEVEL_NUM);
 
     selectedGoo = 0;
     selectedCreationGoo = GooType.Black;
