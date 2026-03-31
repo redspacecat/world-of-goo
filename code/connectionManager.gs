@@ -9,10 +9,12 @@ proc handleSelection {
                             selectedGoo = i;
                             # local Point selectedOldPos = Point {x: MOUSE_X, y: MOUSE_Y};
                             local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                            local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
                             stop_this_script;
                         }
                     } else {
                         local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                        local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
                         selectedGoo = i;
                         stop_this_script;
                     }
@@ -27,14 +29,16 @@ proc handleSelection {
                         goo[selectedGoo].state = GooState.Free;
                     }
                 } else {
+                    local Point pointPosDiff = Point {x: MOUSE_X - oldMousePos.x, y: MOUSE_Y - oldMousePos.y};
                     goo[selectedGoo].state = GooState.Free;
                     goo[selectedGoo].x = MOUSE_X;
                     goo[selectedGoo].y = MOUSE_Y;
-                    goo[selectedGoo].xVel = 0;
-                    goo[selectedGoo].yVel = 0;
+                    goo[selectedGoo].xVel = pointPosDiff.x;
+                    goo[selectedGoo].yVel = pointPosDiff.y;
                     selectedOldPos.x = goo[selectedGoo].x;
                     selectedOldPos.y = goo[selectedGoo].y;
                     findPossibleConnections;
+                    local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
                 }
             }
         }
@@ -50,6 +54,8 @@ proc handleSelection {
                     repeat length possibleConnections {
                         if possibleConnections[i].id != selectedGoo {
                             addGooConnection selectedGoo, possibleConnections[i].id;
+                            goo[selectedGoo].xVel = 0;
+                            goo[selectedGoo].yVel = 0;
                         }
                         i++;
                     }
