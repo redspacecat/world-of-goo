@@ -233,10 +233,7 @@ proc gooPhysics {
                 # --- X MOVEMENT & COLLISION ---
                 goo[i].x += goo[i].xVel / PHYSICS_STEPS;
                 
-                local gridX = floor((goo[i].x + WORLD_OFFSET_X) / GRID_SIZE) + 1;
-                local gridY = floor((goo[i].y + WORLD_OFFSET_Y) / GRID_SIZE) + 1;
-
-                if TOUCHING_GROUND(gridX, gridY) {
+                if TOUCHING_GROUND_XY(goo[i].x, goo[i].y) {
                     goo[i].x -= goo[i].xVel / PHYSICS_STEPS;
                     goo[i].xVel *= -0.4;
                     goo[i].yVel *= 0.8;
@@ -250,11 +247,7 @@ proc gooPhysics {
                 # --- Y MOVEMENT & COLLISION ---
                 goo[i].y += goo[i].yVel / PHYSICS_STEPS;
                 
-                # Recalculate gridX and gridY after Y movement
-                gridX = floor((goo[i].x + WORLD_OFFSET_X) / GRID_SIZE) + 1;
-                gridY = floor((goo[i].y + WORLD_OFFSET_Y) / GRID_SIZE) + 1;
-
-                if TOUCHING_GROUND(gridX, gridY) {
+                if TOUCHING_GROUND_XY(goo[i].x, goo[i].y) {
                     goo[i].y -= goo[i].yVel / PHYSICS_STEPS;
                     goo[i].yVel *= -0.4;
                     if goo[i].state == GooState.Free {
