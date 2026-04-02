@@ -40,15 +40,24 @@ onflag {
     clear_graphic_effects;
     hide;
 
+    broadcast "start_game";
+
     forever {
         moveCamera;
         handleSelection;
         updateGooAI;
         gooPhysics;
-        renderGoo;
-        broadcast_and_wait "display_world";
+
+        erase_all;
+        broadcast "display_background";
+        broadcast "display_world";
+        broadcast "display_goo";
         TICK++;
     }
+}
+
+on "display_goo" {
+    renderGoo;
 }
 
 onkey "space" {

@@ -1,4 +1,4 @@
-costumes "assets/level-1.svg", "assets/giant-square.svg";
+costumes "assets/bg-1.svg", "assets/giant-square.svg";
 
 onflag {
     show;
@@ -10,9 +10,9 @@ on "start_game" {
     set_ghost_effect 0;
 }
 
-on "display_world" {
+on "display_background" {
     switch_costume "giant-square";
     goto -SCROLL_X, -SCROLL_Y;
-    switch_costume "level-" & LEVEL_NUM;
+    switch_costume "bg-" & LEVEL_NUM;
     stamp;
 }

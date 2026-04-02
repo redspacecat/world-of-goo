@@ -1,5 +1,7 @@
 proc loadLevel levelNum {
     if $levelNum == 1 {
+        setWorldSize 1, 1, 1;
+
         makeSquare 0, -120;
         spawnGooBatch 5, GooType.Black, -50, 50, -50, 50;
     }
@@ -31,4 +33,13 @@ proc spawnGooBatch amount, type, minX, maxX, minY, maxY {
     repeat $amount {
         addGoo random($minX, $maxX), random ($minY, $maxY), $type;
     }
+}
+
+proc setWorldSize width, height, resolution=4 {
+    GRID_SIZE = $resolution;
+    LEVEL_WIDTH = 480 * $width;
+    LEVEL_HEIGHT = 360 * $height; 
+    
+    COLS = LEVEL_WIDTH / GRID_SIZE;
+    ROWS = LEVEL_HEIGHT / GRID_SIZE;
 }

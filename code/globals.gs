@@ -2,3 +2,8 @@ var TICK;
 var SCROLL_X;
 var SCROLL_Y;
 var LEVEL_NUM;
+var LEVEL_WIDTH;
+var LEVEL_HEIGHT;
+var ROWS;
+var COLS;
+var GRID_SIZE;

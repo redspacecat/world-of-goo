@@ -232,15 +232,31 @@ proc gooPhysics {
 
                 # --- X MOVEMENT & COLLISION ---
                 goo[i].x += goo[i].xVel / PHYSICS_STEPS;
-                
                 if TOUCHING_GROUND_XY(goo[i].x, goo[i].y) {
-                    goo[i].x -= goo[i].xVel / PHYSICS_STEPS;
-                    goo[i].xVel *= -0.4;
-                    goo[i].yVel *= 0.8;
+                    local stepped = false;
+                    local stepUp = 1;
+                    
+                    # Try to step up over the slope (GRID_SIZE is 4, so we check up to 5 pixels)
+                    repeat GRID_SIZE + 1 {
+                        if not stepped {
+                            if not TOUCHING_GROUND_XY(goo[i].x, goo[i].y + stepUp) {
+                                goo[i].y += stepUp;
+                                stepped = true;
+                            }
+                        }
+                        stepUp++;
+                    }
 
-                    # Turn around if we hit a wall
-                    if goo[i].state == GooState.Free {
-                        goo[i].moveDir = 1 - goo[i].moveDir;
+                    if not stepped {
+                        # If we couldn't step up, it's a true wall. Do the normal bounce.
+                        goo[i].x -= goo[i].xVel / PHYSICS_STEPS;
+                        goo[i].xVel *= -0.4;
+                        goo[i].yVel *= 0.8;
+
+                        # Turn around if we hit a wall
+                        if goo[i].state == GooState.Free {
+                            goo[i].moveDir = 1 - goo[i].moveDir;
+                        }
                     }
                 }
 

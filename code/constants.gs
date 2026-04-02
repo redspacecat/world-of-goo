@@ -69,12 +69,7 @@ proc initConstants {
     PHYSICS_STEPS = 3;
     MAX_CONNECTIONS = 6;
 
-    GRID_SIZE = 4;          # Size of each collision cell (smaller = more accurate but slower scan)
-    LEVEL_WIDTH = 480 * 2; 
-    LEVEL_HEIGHT = 360 * 2; 
-    
-    COLS = LEVEL_WIDTH / GRID_SIZE;
-    ROWS = LEVEL_HEIGHT / GRID_SIZE;
+    GRID_SIZE = 4;
     
     # The math offsets to shift (0,0) to the bottom left of the world
     WORLD_OFFSET_X = 240;

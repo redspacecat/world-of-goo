@@ -1,6 +1,4 @@
 proc renderGoo {
-    erase_all;
-
     set_pen_size 5;
     i = 1;
     repeat length gooConnections {
