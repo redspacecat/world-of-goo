@@ -1,6 +1,6 @@
 proc loadLevel levelNum {
     if $levelNum == 1 {
-        makeTriangle 0, -120;
+        makeSquare 0, -120;
         spawnGooBatch 5, GooType.Black, -50, 50, -50, 50;
     }
 }

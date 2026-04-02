@@ -109,28 +109,7 @@ proc findPossibleConnections {
         if i != selectedGoo and goo[i].state == GooState.Attached {
             local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
             if connDistance < REST_LENGTH + 10 {
-                # Detecting if the target connection line crosses through any of the connections
-                local j = 1;
-                local intersects = false;
-                repeat length gooConnections {
-                    if gooConnections[j] > 0 {
-                        if not intersects {
-                            local currentID = ((j - 1) // maxConnections) + 1;
-                            local Point A = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
-                            local Point B = Point {x: goo[i].x, y: goo[i].y};
-                            local Point C = Point {x: goo[currentID].x, y: goo[currentID].y};
-                            local Point D = Point {x: goo[gooConnections[j]].x, y: goo[gooConnections[j]].y};
-                            if intersect(A, B, C, D) {
-                                intersects = true;
-                            }
-                        }
-                    }
-                    j++;
-                }
-
-                if not intersects {
-                    add GooConn {id: i, distance: connDistance} to possibleConnections;
-                }
+                add GooConn {id: i, distance: connDistance} to possibleConnections;
             }
         }
         i++;
@@ -138,21 +117,62 @@ proc findPossibleConnections {
 
     INSERTION_SORT_BY_FIELD(GooConn, possibleConnections, .distance);
 
+    # Check if inside a structure
     if length possibleConnections >= 3 {
-        # get three closest points and detect if we're inside the triangle that makes
+        local Point p = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
         local Point A = Point {x: goo[possibleConnections[1].id].x, y: goo[possibleConnections[1].id].y};
         local Point B = Point {x: goo[possibleConnections[2].id].x, y: goo[possibleConnections[2].id].y};
         local Point C = Point {x: goo[possibleConnections[3].id].x, y: goo[possibleConnections[3].id].y};
-        if pointInTriangle(Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y}, A, B, C) {
+        
+        local inside = pointInTriangle(p, A, B, C);
+
+        # If it's not in the first triangle, check the remaining triangles of the quad
+        if not inside and length possibleConnections >= 4 {
+            local Point D = Point {x: goo[possibleConnections[4].id].x, y: goo[possibleConnections[4].id].y};
+            if pointInTriangle(p, A, B, D) or pointInTriangle(p, A, C, D) or pointInTriangle(p, B, C, D) {
+                inside = true;
+            }
+        }
+
+        if inside {
             delete possibleConnections;
+            stop_this_script;
         }
     }
+    
+    # Filter out lines that intersect existing connections
+    local k = length possibleConnections;
+    until k < 1 {
+        local j = 1;
+        local intersects = false;
+        repeat length gooConnections {
+            if gooConnections[j] > 0 {
+                if not intersects {
+                    local currentID = ((j - 1) // MAX_CONNECTIONS) + 1;
+                    local Point A = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                    local Point B = Point {x: goo[possibleConnections[k].id].x, y: goo[possibleConnections[k].id].y};
+                    local Point C = Point {x: goo[currentID].x, y: goo[currentID].y};
+                    local Point D = Point {x: goo[gooConnections[j]].x, y: goo[gooConnections[j]].y};
+                    
+                    if intersect(A, B, C, D) {
+                        intersects = true;
+                    }
+                }
+            }
+            j++;
+        }
+        
+        if intersects {
+            delete possibleConnections[k];
+        }
+        k--;
+    }
 
+    # Filter by capacity
     i = length possibleConnections;
-
     until i < 1 {
         # If the gooball is full, remove it from possibilities
-        if getGooConnectionCount(possibleConnections[i].id) >= maxConnections {
+        if getGooConnectionCount(possibleConnections[i].id) >= MAX_CONNECTIONS {
             delete possibleConnections[i];
         }
         i--; 
@@ -189,15 +209,15 @@ proc checkForStrandConnection {
 }
 
 func doesConnectionExist(source, target) {
-    local i = ($source - 1) * maxConnections + 1;
-    repeat maxConnections {
+    local i = ($source - 1) * MAX_CONNECTIONS + 1;
+    repeat MAX_CONNECTIONS {
         if gooConnections[i] == $target {
             return true;
         }
         i++;
     }
-    local i = ($target - 1) * maxConnections + 1;
-    repeat maxConnections {
+    local i = ($target - 1) * MAX_CONNECTIONS + 1;
+    repeat MAX_CONNECTIONS {
         if gooConnections[i] == $source {
             return true;
         }
@@ -208,8 +228,8 @@ func doesConnectionExist(source, target) {
 
 func getGooConnectionCount(id) {
     local count = 0;
-    local i = ($id - 1) * maxConnections + 1;
-    repeat maxConnections {
+    local i = ($id - 1) * MAX_CONNECTIONS + 1;
+    repeat MAX_CONNECTIONS {
         if gooConnections[i] > 0 {
             count++;
         }
@@ -219,9 +239,9 @@ func getGooConnectionCount(id) {
 }
 
 proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
-    local i = ($goo1 - 1) * maxConnections + 1;
+    local i = ($goo1 - 1) * MAX_CONNECTIONS + 1;
     if $bypassLimit {
-        local amount = maxConnections;
+        local amount = MAX_CONNECTIONS;
     } else {
         local amount = gooTypes[goo[$goo1].type].maxConns;
     }
@@ -248,8 +268,8 @@ proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
 }
 
 proc removeGooConnection goo1, goo2, removeOther=false, {
-    local i = ($goo1 - 1) * maxConnections + 1;
-    repeat maxConnections {
+    local i = ($goo1 - 1) * MAX_CONNECTIONS + 1;
+    repeat MAX_CONNECTIONS {
         if gooConnections[i] == $goo2 {
             gooConnections[i] = 0;
             gooConnectionLengths[i] = 0;
@@ -274,8 +294,8 @@ proc removeGooConnection goo1, goo2, removeOther=false, {
 }
 
 proc removeAllGooConnections goo, {
-    local i = ($goo - 1) * maxConnections + 1;
-    repeat maxConnections {
+    local i = ($goo - 1) * MAX_CONNECTIONS + 1;
+    repeat MAX_CONNECTIONS {
         if gooConnections[i] > 0 {
             removeGooConnection $goo, gooConnections[i];
         }

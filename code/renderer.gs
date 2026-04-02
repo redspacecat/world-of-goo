@@ -4,7 +4,7 @@ proc renderGoo {
     set_pen_size 5;
     i = 1;
     repeat length gooConnections {
-        local currentDrawID = ((i - 1) // maxConnections) + 1;
+        local currentDrawID = ((i - 1) // MAX_CONNECTIONS) + 1;
         if gooConnections[i] > 0 and gooConnections[i] < currentDrawID {
             if IS_GOO_ONSCREEN(currentDrawID) or IS_GOO_ONSCREEN(gooConnections[i]) {
                 drawConnection currentDrawID, gooConnections[i];

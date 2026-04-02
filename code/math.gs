@@ -29,6 +29,6 @@ func intersect(Point A, Point B, Point C, Point D) {
     if DIST($A.x, $A.y, $C.x, $C.y) < 0.1 {return false;}
     if DIST($A.x, $A.y, $D.x, $D.y) < 0.1 {return false;}
     if DIST($B.x, $B.y, $C.x, $C.y) < 0.1 {return false;}
-    if DIST($B.x, $B.y, $C.x, $C.y) < 0.1 {return false;}
+    if DIST($B.x, $B.y, $D.x, $D.y) < 0.1 {return false;}
     return ccw($A, $C, $D) != ccw($B, $C, $D) and ccw($A, $B, $C) != ccw($A, $B, $D);
 }

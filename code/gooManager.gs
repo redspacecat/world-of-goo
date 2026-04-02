@@ -1,6 +1,6 @@
 proc addGoo x, y, type {
     add GooBall {x: $x, y: $y, type: $type, state: GooState.Free} to goo;
-    repeat maxConnections {
+    repeat MAX_CONNECTIONS {
         add 0 to gooConnections;
         add 0 to gooConnectionLengths;
     }
@@ -41,8 +41,8 @@ proc deleteGoo id {
     }
 
     # Remove the deleted goo's connection slots from the gooConnections list
-    local startIndex = ($id - 1) * maxConnections + 1;
-    repeat maxConnections {
+    local startIndex = ($id - 1) * MAX_CONNECTIONS + 1;
+    repeat MAX_CONNECTIONS {
         delete gooConnections[startIndex];
         delete gooConnectionLengths[startIndex];
     }
@@ -147,11 +147,11 @@ proc updateGooAI {
 }
 
 func getRoamingNeighbor(node, exclude) {
-    local start = ($node - 1) * maxConnections + 1;
+    local start = ($node - 1) * MAX_CONNECTIONS + 1;
     delete possibleNeighbors;
     
     local c = 0;
-    repeat maxConnections {
+    repeat MAX_CONNECTIONS {
         local n = gooConnections[start + c];
         if n > 0 and n != $exclude {
             add n to possibleNeighbors;
@@ -190,7 +190,7 @@ proc gooPhysics {
         # Calculate Spring Forces (Newtonian)
         i = 1;
         repeat length gooConnections {
-            local id1 = ((i - 1) // maxConnections) + 1;
+            local id1 = ((i - 1) // MAX_CONNECTIONS) + 1;
             local id2 = gooConnections[i];
 
             if id2 > 0 and id2 < id1 {

@@ -67,7 +67,7 @@ proc initConstants {
     GRAVITY = 0.4;        # A single, unified gravity constant
     REST_LENGTH = 60;
     PHYSICS_STEPS = 3;
-    maxConnections = 6;
+    MAX_CONNECTIONS = 6;
 
     GRID_SIZE = 4;          # Size of each collision cell (smaller = more accurate but slower scan)
     LEVEL_WIDTH = 480 * 2; 
