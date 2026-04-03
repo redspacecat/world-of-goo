@@ -7,6 +7,7 @@ list worldGrid;
 
 # temp lists
 list possibleNeighbors;
+list pipeDataTemp;
 
 enum GooType {
     Black=1,

@@ -9,6 +9,7 @@ costumes "assets/hitbox.svg", "assets/renderbox.svg";
 
 %include std/math
 %include std/list
+%include std/string
 
 %include code/math
 %include code/constants
@@ -28,6 +29,9 @@ onflag {
     SCROLL_X = 0;
     SCROLL_Y = 0;
     LEVEL_NUM = 1;
+    PIPE_OPEN = false;
+    COLLECTED_GOO = 0;
+    GAME_STARTED = false;
 
     loadLevel(LEVEL_NUM);
 
@@ -41,11 +45,13 @@ onflag {
     hide;
 
     broadcast "start_game";
+    GAME_STARTED = true;
 
     forever {
         moveCamera;
         handleSelection;
         updateGooAI;
+        handlePipe;
         gooPhysics;
 
         erase_all;

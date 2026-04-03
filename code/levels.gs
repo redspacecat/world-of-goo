@@ -1,9 +1,10 @@
 proc loadLevel levelNum {
     if $levelNum == 1 {
         setWorldSize 1, 1, 1;
+        setPipe "0,90;0,150;100,150;100,200";
 
         makeSquare 0, -120;
-        spawnGooBatch 5, GooType.Black, -50, 50, -50, 50;
+        spawnGooBatch 10, GooType.Black, -50, 50, -50, 50;
     }
 }
 
@@ -42,4 +43,34 @@ proc setWorldSize width, height, resolution=4 {
     
     COLS = LEVEL_WIDTH / GRID_SIZE;
     ROWS = LEVEL_HEIGHT / GRID_SIZE;
+}
+
+proc setPipe pipeStr {
+    split $pipeStr, ";";
+    COPY(split, pipeDataTemp);
+
+    i = 1;
+    delete PIPE;
+    repeat length pipeDataTemp {
+        split pipeDataTemp[i], ",";
+        add split[1] to PIPE;
+        add split[2] to PIPE;
+        i++;
+    }
+
+    if PIPE[1] == PIPE[3] {
+        if PIPE[2] < PIPE[4] {
+            local pipeDir = 0;
+        } else {
+            local pipeDir = 180;
+        }
+    } else {
+        if PIPE[1] < PIPE[3] {
+            local pipeDir = 270;
+        } else {
+            local pipeDir = 90;
+        }
+    }
+
+    insert pipeDir at PIPE[1];
 }

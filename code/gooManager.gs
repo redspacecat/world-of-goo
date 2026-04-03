@@ -102,8 +102,21 @@ proc updateGooAI {
                 local sID = goo[i].sourceNode;
                 local tID = goo[i].targetNode;
 
-                # Fallback if nodes are destroyed or detached
-                if sID == 0 or tID == 0 or goo[sID].state != GooState.Attached or goo[tID].state != GooState.Attached {
+                # If close to the pipe and it's open, detach to be sucked
+                if PIPE_OPEN and DIST(goo[i].x, goo[i].y, PIPE[2], PIPE[3]) < 30 {
+                    goo[i].state = GooState.Free;
+                    goo[i].sourceNode = 0;
+                    goo[i].targetNode = 0;
+                    # Give them an initial velocity towards the pipe
+                    local dx = PIPE[2] - goo[i].x;
+                    local dy = PIPE[3] - goo[i].y;
+                    local distToPipe = DIST(goo[i].x, goo[i].y, PIPE[2], PIPE[3]);
+                    if distToPipe > 0.1 {
+                        goo[i].xVel = (dx / distToPipe) * 5;
+                        goo[i].yVel = (dy / distToPipe) * 5;
+                    }
+                } elif sID == 0 or tID == 0 or goo[sID].state != GooState.Attached or goo[tID].state != GooState.Attached {
+                    # Fallback if nodes are destroyed or detached
                     goo[i].state = GooState.Free;
                 } else {
                     local totalDist = DIST(goo[sID].x, goo[sID].y, goo[tID].x, goo[tID].y);
@@ -160,7 +173,29 @@ func getRoamingNeighbor(node, exclude) {
     }
     
     if length possibleNeighbors > 0 {
-        return possibleNeighbors["random"];
+        if PIPE_OPEN {
+            if random(0.0, 1.0) < 0.65 {
+                # Choose the neighbor closest to the target
+                local closest = 0;
+                local minDist = 999999;
+                local idx = 1;
+                repeat length possibleNeighbors {
+                    local n = possibleNeighbors[idx];
+                    local dist = DIST(goo[n].x, goo[n].y, PIPE[2], PIPE[3]);
+                    if dist < minDist {
+                        minDist = dist;
+                        closest = n;
+                    }
+                    idx++;
+                }
+                return closest;
+            } else {
+                # Choose randomly for exploration
+                return possibleNeighbors["random"];
+            }
+        } else {
+            return possibleNeighbors["random"];
+        }
     }
     
     # If no other choice, go back where we came from (dead end)
@@ -348,5 +383,55 @@ proc scanOneScreen cx, cy, chunkRows, chunkCols {
             col++;
         }
         row++;
+    }
+}
+
+proc handlePipe {
+    local pipeX = PIPE[2];
+    local pipeY = PIPE[3];
+    
+    local openRadius = 30;
+    local suckRadius = 30;
+    local collectRadius = 10;
+    local suckForce = 1.5;
+
+    # Check if the pipe should open
+    PIPE_OPEN = false;
+    local i = 1;
+    repeat length goo {
+        if goo[i].state == GooState.Attached {
+            if DIST(goo[i].x, goo[i].y, pipeX, pipeY) < openRadius {
+                PIPE_OPEN = true;
+            }
+        }
+        i++;
+    }
+
+    # Apply suction and collect
+    if PIPE_OPEN {
+        i = length goo;
+        until i < 1 {
+            local dist = DIST(goo[i].x, goo[i].y, pipeX, pipeY);
+            
+            if dist < collectRadius and goo[i].state != GooState.Attached {
+                # Gooball reached the center, suck it up
+                deleteGoo i;
+                COLLECTED_GOO++;
+            } elif dist < suckRadius {
+                # Calculate vector towards the pipe
+                local dx = pipeX - goo[i].x;
+                local dy = pipeY - goo[i].y;
+                
+                # Apply force (stronger when closer)
+                local pullForce = suckForce * (1 - (dist / suckRadius));
+                goo[i].xVel += (dx / dist) * pullForce;
+                goo[i].yVel += (dy / dist) * pullForce;
+                
+                # Add damping when being sucked to prevent jiggling at the entrance
+                goo[i].xVel *= 0.85;
+                goo[i].yVel *= 0.85;
+            }
+            i--;
+        }
     }
 }

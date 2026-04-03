@@ -7,3 +7,8 @@ var LEVEL_HEIGHT;
 var ROWS;
 var COLS;
 var GRID_SIZE;
+var PIPE_OPEN;
+var COLLECTED_GOO;
+var GAME_STARTED;
+
+list PIPE;
