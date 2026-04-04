@@ -12,3 +12,4 @@ var COLLECTED_GOO;
 var GAME_STARTED;
 
 list PIPE;
+list SOUND_QUEUE;
