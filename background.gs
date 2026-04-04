@@ -1,4 +1,4 @@
-costumes "assets/bg-1.svg", "assets/giant-square.svg";
+costumes "assets/images/levels/background/*.svg", "assets/images/giant-square.svg";
 
 onflag {
     show;

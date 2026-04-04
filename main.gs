@@ -1,4 +1,4 @@
-costumes "assets/hitbox.svg", "assets/renderbox.svg";
+costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg";
 
 %define MOUSE_X mouse_x() + SCROLL_X
 %define MOUSE_Y mouse_y() + SCROLL_Y

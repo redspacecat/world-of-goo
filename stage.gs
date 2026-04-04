@@ -1,6 +1,6 @@
-costumes "assets/sky_blue.png";
+costumes "assets/images/sky_blue.png";
 %include code/globals
-# sounds "assets/Brave Adventurers.mp3";
+# sounds "assets/audio/music/Brave Adventurers.mp3";
 
 # onflag {
 #     forever {

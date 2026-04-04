@@ -1,8 +1,8 @@
 costumes
-"assets/giant-square.svg",
-"assets/level-1.svg",
-"assets/pipeCap_closed.png",
-"assets/pipeCap.png";
+"assets/images/giant-square.svg",
+"assets/images/levels/terrain/*.svg",
+"assets/images/pipeCap_closed.png",
+"assets/images/pipeCap.png";
 
 onflag {
     show;
