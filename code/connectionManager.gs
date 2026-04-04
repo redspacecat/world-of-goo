@@ -50,7 +50,7 @@ proc handleSelection {
                             local nextX = goo[selectedGoo].x + stepX;
                             local nextY = goo[selectedGoo].y + stepY;
                             
-                            if not TOUCHING_GROUND_XY(nextX, nextY) {
+                            if not TOUCHING_GROUND(nextX, nextY) {
                                 goo[selectedGoo].x = nextX;
                                 goo[selectedGoo].y = nextY;
                             } else {

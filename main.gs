@@ -3,8 +3,8 @@ costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg";
 %define MOUSE_X mouse_x() + SCROLL_X
 %define MOUSE_Y mouse_y() + SCROLL_Y
 %define GOTO(xPos, yPos) goto xPos - SCROLL_X, yPos - SCROLL_Y
-%define TOUCHING_GROUND(gridX, gridY) worldGrid[(gridY - 1) * COLS + gridX] == 1
-%define TOUCHING_GROUND_XY(xPos, yPos) worldGrid[((floor((yPos + WORLD_OFFSET_Y) / GRID_SIZE) + 1) - 1) * COLS + (floor((xPos + WORLD_OFFSET_X) / GRID_SIZE) + 1)] == 1
+%define TOUCHING_GROUND_GRID(gridX, gridY) worldGrid[(gridY - 1) * COLS + gridX] == 1
+%define TOUCHING_GROUND(xPos, yPos) worldGrid[((floor((yPos + WORLD_OFFSET_Y) / GRID_SIZE) + 1) - 1) * COLS + (floor((xPos + WORLD_OFFSET_X) / GRID_SIZE) + 1)] == 1
 %define IS_GOO_ONSCREEN(id) abs(goo[id].x - SCROLL_X) < 240 + 20 and abs(goo[id].y - SCROLL_Y) < 180 + 20
 
 %include std/math
@@ -18,6 +18,7 @@ costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg";
 %include code/gooManager
 %include code/connectionManager
 %include code/levels
+%include code/utils
 
 onflag {
     delete goo;

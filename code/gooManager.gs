@@ -65,7 +65,7 @@ proc updateGooAI {
         if i != selectedGoo {
             if goo[i].state == GooState.Free {
                 # Rolling, only when on gorund
-                if TOUCHING_GROUND_XY(goo[i].x, goo[i].y - 2) {
+                if TOUCHING_GROUND(goo[i].x, goo[i].y - 2) {
                     goo[i].roamTimer--;
                     if goo[i].roamTimer <= 0 {
                         goo[i].moveDir = (random(0, 1) * 2) - 1;
@@ -267,14 +267,14 @@ proc gooPhysics {
 
                 # --- X MOVEMENT & COLLISION ---
                 goo[i].x += goo[i].xVel / PHYSICS_STEPS;
-                if TOUCHING_GROUND_XY(goo[i].x, goo[i].y) {
+                if TOUCHING_GROUND(goo[i].x, goo[i].y) {
                     local stepped = false;
                     local stepUp = 1;
                     
                     # Try to step up over the slope (GRID_SIZE is 4, so we check up to 5 pixels)
                     repeat GRID_SIZE + 1 {
                         if not stepped {
-                            if not TOUCHING_GROUND_XY(goo[i].x, goo[i].y + stepUp) {
+                            if not TOUCHING_GROUND(goo[i].x, goo[i].y + stepUp) {
                                 goo[i].y += stepUp;
                                 stepped = true;
                             }
@@ -298,7 +298,7 @@ proc gooPhysics {
                 # --- Y MOVEMENT & COLLISION ---
                 goo[i].y += goo[i].yVel / PHYSICS_STEPS;
                 
-                if TOUCHING_GROUND_XY(goo[i].x, goo[i].y) {
+                if TOUCHING_GROUND(goo[i].x, goo[i].y) {
                     goo[i].y -= goo[i].yVel / PHYSICS_STEPS;
                     goo[i].yVel *= -0.4;
                     if goo[i].state == GooState.Free {
