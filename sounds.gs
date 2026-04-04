@@ -25,6 +25,10 @@ proc initSounds {
     addSound "mumble", 7;
     addSound "batsqueak", 5;
     addSound "chirp", 2;
+    
+    addSound "suck_begin", 1;
+    addSound "suck_end", 1;
+    addSound "suck_loop", 1;
 }
 
 onflag {

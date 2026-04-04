@@ -33,6 +33,11 @@ onflag {
     PIPE_OPEN = false;
     COLLECTED_GOO = 0;
     GAME_STARTED = false;
+    
+    wasMouseDown = false;
+    pipeOpenPrev = false;
+    dragDistance = 0;
+    pipeLoopTimer = 0;
 
     loadLevel(LEVEL_NUM);
 

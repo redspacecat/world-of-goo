@@ -27,7 +27,8 @@ struct GooTypeDef {
     minConns,
     gooColor,
     connColor,
-    isDetachable
+    isDetachable,
+    pickupSound="batsqueak"
 }
 
 struct GooBall {
@@ -85,7 +86,7 @@ proc addGooType GooTypeDef def {
 
 proc initGooType {
     delete gooTypes;
-    addGooType GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false};
-    addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: true};
+    addGooType GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false, pickupSound: "batsqueak"};
+    addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: true, pickupSound: "chirp"};
     addGooType GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 4, minConns: 2, isDetachable: false};
 }

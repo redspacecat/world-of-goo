@@ -396,6 +396,7 @@ proc handlePipe {
     local suckForce = 1.5;
 
     # Check if the pipe should open
+    local wasOpen = pipeOpenPrev;
     PIPE_OPEN = false;
     local i = 1;
     repeat length goo {
@@ -407,6 +408,24 @@ proc handlePipe {
         i++;
     }
 
+    if PIPE_OPEN and not wasOpen {
+        queueSound "suck_begin";
+    }
+    if not PIPE_OPEN and wasOpen {
+        queueSound "suck_end";
+    }
+    pipeOpenPrev = PIPE_OPEN;
+
+    if PIPE_OPEN {
+        pipeLoopTimer--;
+        if pipeLoopTimer <= 0 {
+            queueSound "suck_loop";
+            pipeLoopTimer = 50;  # Play every 4 seconds at 30fps
+        }
+    } else {
+        pipeLoopTimer = 0;
+    }
+
     # Apply suction and collect
     if PIPE_OPEN {
         i = length goo;
@@ -416,6 +435,7 @@ proc handlePipe {
             if dist < collectRadius and goo[i].state != GooState.Attached {
                 # Gooball reached the center, suck it up
                 deleteGoo i;
+                queueSound "pipeHit";
                 COLLECTED_GOO++;
             } elif dist < suckRadius {
                 # Calculate vector towards the pipe

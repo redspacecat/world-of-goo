@@ -1,25 +1,32 @@
 proc handleSelection {
     if mouse_down() {
         if selectedGoo == 0 {
-            i = 1;
-            repeat length goo {
-                if DIST(goo[i].x, goo[i].y, MOUSE_X, MOUSE_Y) < 12 {
-                    if goo[i].state == GooState.Attached {
-                        if gooTypes[goo[i].type].isDetachable {
-                            selectedGoo = i;
-                            # local Point selectedOldPos = Point {x: MOUSE_X, y: MOUSE_Y};
+            if not wasMouseDown {
+                i = 1;
+                repeat length goo {
+                    if DIST(goo[i].x, goo[i].y, MOUSE_X, MOUSE_Y) < 12 {
+                        if goo[i].state == GooState.Attached {
+                            if gooTypes[goo[i].type].isDetachable {
+                                selectedGoo = i;
+                                # local Point selectedOldPos = Point {x: MOUSE_X, y: MOUSE_Y};
+                                local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                                local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
+                                queueSound "pickup";
+                                dragDistance = 0;
+                                stop_this_script;
+                            }
+                        } else {
                             local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
                             local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
+                            selectedGoo = i;
+                            queueSound "pickup";
+                            queueSound gooTypes[goo[selectedGoo].type].pickupSound;
+                            dragDistance = 0;
                             stop_this_script;
                         }
-                    } else {
-                        local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
-                        local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
-                        selectedGoo = i;
-                        stop_this_script;
                     }
+                    i++;
                 }
-                i++;
             }
         } else {
             if selectedOldPos.x != MOUSE_X or selectedOldPos.y != MOUSE_Y {
@@ -27,6 +34,7 @@ proc handleSelection {
                     if DIST(goo[selectedGoo].x, goo[selectedGoo].y, MOUSE_X, MOUSE_Y) > 10 {
                         removeAllGooConnections selectedGoo;
                         goo[selectedGoo].state = GooState.Free;
+                        queueSound "detached";
                     }
                 } else {
                     goo[selectedGoo].state = GooState.Free;
@@ -64,6 +72,8 @@ proc handleSelection {
                     goo[selectedGoo].xVel = goo[selectedGoo].x - preMoveX;
                     goo[selectedGoo].yVel = goo[selectedGoo].y - preMoveY;
 
+                    dragDistance += dist;
+
                     selectedOldPos.x = goo[selectedGoo].x;
                     selectedOldPos.y = goo[selectedGoo].y;
                     findPossibleConnections;
@@ -77,11 +87,14 @@ proc handleSelection {
                 }
             }
         }
+        wasMouseDown = true;
     } else {
         if selectedGoo > 0 {
+            local placed = false;
             findPossibleConnections;
             if isValidStrandConnection {
                 addGooConnection strandConnection.id1, strandConnection.id2, bypassLimit: true;
+                queueSound "glee";
                 deleteGoo selectedGoo;
             } else {
                 if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
@@ -91,13 +104,23 @@ proc handleSelection {
                             addGooConnection selectedGoo, possibleConnections[i].id;
                             goo[selectedGoo].xVel = 0;
                             goo[selectedGoo].yVel = 0;
+                            placed = true;
                         }
                         i++;
+                    }
+                    if placed {
+                        queueSound "glee";
                     }
                 }
             }
         }
+        if dragDistance > 20 {
+            queueSound "fling";
+        }
         selectedGoo = 0;
+        wasMouseDown = false;
+        flingPlayed = false;
+        dragDistance = 0;
         delete possibleConnections;
     }
 }
@@ -239,6 +262,7 @@ proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
 
             # connect the other direction
             if not $connectOther {
+                queueSound "attach";
                 addGooConnection $goo2, $goo1, connectOther: true, bypassLimit: true;
             }
             stop_this_script;
@@ -256,6 +280,7 @@ proc removeGooConnection goo1, goo2, removeOther=false, {
 
             # remove the other direction
             if not $removeOther {
+                queueSound "strand_break";
                 removeGooConnection $goo2, $goo1, removeOther: true;
             }
 
