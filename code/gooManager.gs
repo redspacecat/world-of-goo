@@ -206,8 +206,11 @@ proc gooPhysics {
     i = 1;
     repeat length gooConnectionLengths {
         if gooConnectionLengths[i] > 0 {
-            if abs(REST_LENGTH - gooConnectionLengths[i]) > 0.01 {
-                gooConnectionLengths[i] += (REST_LENGTH - gooConnectionLengths[i]) / 10;
+            if gooConnectionLengths[i] < REST_LENGTH {
+                local targetLength = REST_LENGTH * REST_LENGTH_MIN_NORMALIZE_RATIO;
+                if gooConnectionLengths[i] < targetLength {
+                    gooConnectionLengths[i] += (targetLength - gooConnectionLengths[i]) * REST_LENGTH_NORMALIZE_SPEED;
+                }
             }
         }
         i++;

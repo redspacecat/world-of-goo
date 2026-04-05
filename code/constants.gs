@@ -68,6 +68,8 @@ proc initConstants {
     DAMPING = 0.98;       # Global air resistance
     GRAVITY = 0.4;        # A single, unified gravity constant
     REST_LENGTH = 60;
+    REST_LENGTH_NORMALIZE_SPEED = 0.05; # How fast strands drift back toward default length
+    REST_LENGTH_MIN_NORMALIZE_RATIO = 0.8; # Short strands only normalize partway toward REST_LENGTH
     PHYSICS_STEPS = 3;
     MAX_CONNECTIONS = 6;
 
