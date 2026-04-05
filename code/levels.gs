@@ -5,6 +5,12 @@ proc loadLevel levelNum {
 
         makeSquare 0, -120;
         spawnGooBatch 10, GooType.Black, -50, 50, -50, 50;
+    } elif $levelNum == 2 {
+        setWorldSize 2, 1, 2;
+        setPipe "520,90;520,150;960,150";
+
+        makeSquare -20, -25;
+        spawnGooBatch 30, GooType.Black, -180, 0, 10, 100;
     }
 }
 

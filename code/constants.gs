@@ -63,7 +63,7 @@ struct Point {
 }
 
 proc initConstants {
-    SPRING_K = 1.25;       # Spring stiffness
+    SPRING_K = 1;       # Spring stiffness
     SPRING_DAMPING = 0.8; # How quickly the spring stops bouncing
     DAMPING = 0.98;       # Global air resistance
     GRAVITY = 0.4;        # A single, unified gravity constant
@@ -86,7 +86,7 @@ proc addGooType GooTypeDef def {
 
 proc initGooType {
     delete gooTypes;
-    addGooType GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 1, isDetachable: false, pickupSound: "batsqueak"};
+    addGooType GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 2, isDetachable: false, pickupSound: "batsqueak"};
     addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: true, pickupSound: "chirp"};
     addGooType GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 4, minConns: 2, isDetachable: false};
 }

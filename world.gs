@@ -3,6 +3,7 @@ costumes
 "assets/images/levels/terrain/*.svg",
 "assets/images/pipeCap_closed.png",
 "assets/images/pipeCap.png";
+%define GOTO(xPos, yPos) goto xPos - SCROLL_X, yPos - SCROLL_Y
 
 onflag {
     show;
@@ -29,15 +30,15 @@ proc displayPipe {
     i = 2;
     set_pen_color "#0a0a0a";
     set_pen_size 15;
-    goto PIPE[2], PIPE[3];
+    GOTO(PIPE[2], PIPE[3]);
     pen_down;
     repeat (length(PIPE) - 1) / 2 {
-        goto PIPE[i], PIPE[i + 1];
+        GOTO(PIPE[i], PIPE[i + 1]);
         i += 2;
     }
     pen_up;
 
-    goto PIPE[2], PIPE[3];
+    GOTO(PIPE[2], PIPE[3]);
 
     if PIPE_OPEN {
         switch_costume "pipeCap";
