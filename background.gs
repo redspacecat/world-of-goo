@@ -1,4 +1,4 @@
-costumes "assets/images/levels/background/*.svg", "assets/images/giant-square.svg";
+costumes "assets/images/levels/background/*.svg", "assets/images/giant-square.svg", "assets/images/blank.svg";
 
 onflag {
     show;
@@ -13,6 +13,7 @@ on "start_game" {
 on "display_background" {
     switch_costume "giant-square";
     goto -SCROLL_X, -SCROLL_Y;
+    switch_costume "blank";
     switch_costume "bg-" & LEVEL_NUM;
     stamp;
 }

@@ -11,6 +11,35 @@ proc loadLevel levelNum {
 
         makeSquare -20, -25;
         spawnGooBatch 30, GooType.Black, -180, 0, 10, 100;
+    } elif $levelNum == 3 {
+        setWorldSize 1, 2, 2;
+        setPipe "0,420;0,470;50,470;50,500;20,500;20,600";
+
+        # makeTriangle 0, -100, GooType.Green, GooType.Green, GooType.Green;
+        addGoo -10, -60, GooType.Green;
+        addGoo 50, -60, GooType.Green;
+        addGoo 20, 0, GooType.Green;
+        addGooConnection 1, 2, true;
+        addGooConnection 2, 3, true;
+        addGooConnection 3, 1, true;
+        addGoo -40, 0, GooType.Green;
+        addGoo 72, 0, GooType.Green;
+        addGooConnection 4, 3, true;
+        addGooConnection 4, 1, true;
+        addGooConnection 5, 3, true;
+        addGooConnection 5, 2, true;
+        addGoo -70, -60, GooType.Green;
+        addGoo -88, 0, GooType.Green;
+        addGooConnection 6, 4, true;
+        addGooConnection 6, 1, true;
+        addGooConnection 7, 4, true;
+        addGooConnection 7, 6, true;
+        addGoo -10, -100, GooType.Green;
+        addGooConnection 8, 6, true;
+        addGooConnection 8, 2, true;
+        addGooConnection 8, 1, true;
+
+        spawnGooBatch 10, GooType.Green, 0, 0, 0, 0;
     }
 }
 
