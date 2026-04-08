@@ -25,15 +25,19 @@ proc deleteGoo id {
     i = 1;
     repeat length goo {
         if goo[i].sourceNode == $id {
-            goo[i].sourceNode = 0; # Node gone
-            goo[i].state = GooState.Free; # Fall off strand
+            goo[i].sourceNode = 0;   # Node gone
+            if goo[i].state == GooState.Roaming {
+                goo[i].state = GooState.Free;   # Fall off strand
+            }
         } elif goo[i].sourceNode > $id {
             goo[i].sourceNode--;
         }
         
         if goo[i].targetNode == $id {
             goo[i].targetNode = 0;
-            goo[i].state = GooState.Free;
+            if goo[i].state == GooState.Roaming {
+                goo[i].state = GooState.Free;
+            }
         } elif goo[i].targetNode > $id {
             goo[i].targetNode--;
         }

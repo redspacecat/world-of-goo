@@ -260,6 +260,12 @@ proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
             goo[$goo1].state = GooState.Attached;
             goo[$goo2].state = GooState.Attached;
 
+            # Clear any stale roaming nodes so they don't interfere later
+            goo[$goo1].sourceNode = 0;
+            goo[$goo1].targetNode = 0;
+            goo[$goo2].sourceNode = 0;
+            goo[$goo2].targetNode = 0;
+
             # connect the other direction
             if not $connectOther {
                 queueSound "attach";
