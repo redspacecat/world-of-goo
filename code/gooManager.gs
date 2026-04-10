@@ -8,7 +8,7 @@ proc addGoo x, y, type {
 
 proc deleteGoo id {
     # Update all connections to account for the shifted/deleted ID
-    i = 1;
+    local i = 1;
     repeat length gooConnections {
         if gooConnections[i] == $id {
             # The deleted goo was connected here. Sever the connection. 
@@ -405,7 +405,7 @@ proc handlePipe {
     # Check if the pipe should open
     local wasOpen = pipeOpenPrev;
     PIPE_OPEN = false;
-    local i = 1;
+    i = 1;
     repeat length goo {
         if goo[i].state == GooState.Attached {
             if DIST(goo[i].x, goo[i].y, pipeX, pipeY) < openRadius {
@@ -442,6 +442,7 @@ proc handlePipe {
             if dist < collectRadius and goo[i].state != GooState.Attached {
                 # Gooball reached the center, suck it up
                 deleteGoo i;
+                queueSound "glee";
                 queueSound "pipeHit";
                 COLLECTED_GOO++;
             } elif dist < suckRadius {
