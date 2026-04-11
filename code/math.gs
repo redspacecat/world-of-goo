@@ -25,7 +25,7 @@ func ccw(Point A, Point B, Point C) {
 }
 
 func intersect(Point A, Point B, Point C, Point D) {
-    # if the points are roughly the same, we can say they're not overlapping
+    # If the points are roughly the same, we can say they're not overlapping
     if DIST($A.x, $A.y, $C.x, $C.y) < 0.1 {return false;}
     if DIST($A.x, $A.y, $D.x, $D.y) < 0.1 {return false;}
     if DIST($B.x, $B.y, $C.x, $C.y) < 0.1 {return false;}

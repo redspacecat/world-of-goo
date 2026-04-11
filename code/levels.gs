@@ -15,7 +15,6 @@ proc loadLevel levelNum {
         setWorldSize 1, 2, 2;
         setPipe "0,420;0,470;50,470;50,500;20,500;20,600";
 
-        # makeTriangle 0, -100, GooType.Green, GooType.Green, GooType.Green;
         addGoo -10, -60, GooType.Green;
         addGoo 50, -60, GooType.Green;
         addGoo 20, 0, GooType.Green;

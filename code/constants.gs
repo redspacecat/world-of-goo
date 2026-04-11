@@ -5,7 +5,7 @@ list GooConn possibleConnections;
 list gooConnectionLengths;
 list worldGrid;
 
-# temp lists
+# Temp lists
 list possibleNeighbors;
 list pipeDataTemp;
 
@@ -43,7 +43,7 @@ struct GooBall {
     sourceNode=0,    # The node it's coming from
     targetNode=0,    # The node it's going to
     climbDist=0,     # Pixels traveled along the current strand
-    roamTimer=0,      # Timer for random movements
+    roamTimer=0,     # Timer for random movements
     moveDir=1
 }
 
@@ -63,10 +63,10 @@ struct Point {
 }
 
 proc initConstants {
-    SPRING_K = 1;       # Spring stiffness
+    SPRING_K = 1;         # Spring stiffness
     SPRING_DAMPING = 0.8; # How quickly the spring stops bouncing
     DAMPING = 0.98;       # Global air resistance
-    GRAVITY = 0.4;        # A single, unified gravity constant
+    GRAVITY = 0.4;
     REST_LENGTH = 60;
     REST_LENGTH_NORMALIZE_SPEED = 0.05; # How fast strands drift back toward default length
     REST_LENGTH_MIN_NORMALIZE_RATIO = 0.8; # Short strands only normalize partway toward REST_LENGTH
@@ -75,7 +75,6 @@ proc initConstants {
 
     GRID_SIZE = 4;
     
-    # The math offsets to shift (0,0) to the bottom left of the world
     WORLD_OFFSET_X = 240;
     WORLD_OFFSET_Y = 180;
 

@@ -39,7 +39,7 @@ proc renderGoo {
         i++;
     }
 
-    # render roaming gooballs on top of other ones
+    # Render roaming gooballs on top of other ones
     i = 1;
     repeat length goo {
         if IS_GOO_ONSCREEN(i) {

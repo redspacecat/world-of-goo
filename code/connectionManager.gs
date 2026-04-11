@@ -8,7 +8,6 @@ proc handleSelection {
                         if goo[i].state == GooState.Attached {
                             if gooTypes[goo[i].type].isDetachable {
                                 selectedGoo = i;
-                                # local Point selectedOldPos = Point {x: MOUSE_X, y: MOUSE_Y};
                                 local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
                                 local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
                                 queueSound "pickup";
@@ -162,7 +161,7 @@ proc findPossibleConnections {
     INSERTION_SORT_BY_FIELD(GooConn, possibleConnections, .distance);
 
     if length possibleConnections >= 3 {
-        # get three closest points and detect if we're inside the triangle that makes
+        # Get three closest points and detect if we're inside the triangle that makes
         local Point A = Point {x: goo[possibleConnections[1].id].x, y: goo[possibleConnections[1].id].y};
         local Point B = Point {x: goo[possibleConnections[2].id].x, y: goo[possibleConnections[2].id].y};
         local Point C = Point {x: goo[possibleConnections[3].id].x, y: goo[possibleConnections[3].id].y};
@@ -256,7 +255,7 @@ proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
 
             gooConnectionLengths[i] = DIST(goo[$goo1].x, goo[$goo1].y, goo[$goo2].x, goo[$goo2].y);
 
-            # set the goo state
+            # Set the goo state
             goo[$goo1].state = GooState.Attached;
             goo[$goo2].state = GooState.Attached;
 
@@ -266,7 +265,7 @@ proc addGooConnection goo1, goo2, bypassLimit=false, connectOther=false, {
             goo[$goo2].sourceNode = 0;
             goo[$goo2].targetNode = 0;
 
-            # connect the other direction
+            # Connect the other direction
             if not $connectOther {
                 queueSound "attach";
                 addGooConnection $goo2, $goo1, connectOther: true, bypassLimit: true;
@@ -284,13 +283,13 @@ proc removeGooConnection goo1, goo2, removeOther=false, {
             gooConnections[i] = 0;
             gooConnectionLengths[i] = 0;
 
-            # remove the other direction
+            # Remove the other direction
             if not $removeOther {
                 queueSound "strand_break";
                 removeGooConnection $goo2, $goo1, removeOther: true;
             }
 
-            # set the goo state
+            # Set the goo state
             if getGooConnectionCount($goo1) == 0 {
                 goo[$goo1].state = GooState.Free;
             }

@@ -229,7 +229,7 @@ proc gooPhysics {
             i++;
         }
 
-        # Calculate Spring Forces (Newtonian)
+        # Calculate spring forces
         i = 1;
         repeat length gooConnections {
             local id1 = ((i - 1) // MAX_CONNECTIONS) + 1;
@@ -244,7 +244,7 @@ proc gooPhysics {
                 local currentRestLength = gooConnectionLengths[i];
                 local springForce = (dist - currentRestLength) * SPRING_K;
 
-                # Damping for the SPRING (stops the jitter/oscillation)
+                # Damping for the spring
                 local relVelX = goo[id2].xVel - goo[id1].xVel;
                 local relVelY = goo[id2].yVel - goo[id1].yVel;
                 local relVel = (relVelX * dx / dist) + (relVelY * dy / dist);
@@ -263,16 +263,15 @@ proc gooPhysics {
             i++;
         }
 
-        # Apply Forces and Movement
+        # Apply forces and movement
         i = 1;
         repeat length goo {
             if i != selectedGoo and goo[i].state != GooState.Roaming {
                 # Apply spring forces and gravity
-                # (Notice gravity is also divided by steps)
                 goo[i].xVel += goo[i].forceX / PHYSICS_STEPS;
                 goo[i].yVel += (goo[i].forceY - GRAVITY) / PHYSICS_STEPS;
 
-                # --- X MOVEMENT & COLLISION ---
+                # X movement and collision
                 goo[i].x += goo[i].xVel / PHYSICS_STEPS;
                 if TOUCHING_GROUND(goo[i].x, goo[i].y) {
                     local stepped = false;
@@ -302,7 +301,7 @@ proc gooPhysics {
                     }
                 }
 
-                # --- Y MOVEMENT & COLLISION ---
+                # Y movement and collision
                 goo[i].y += goo[i].yVel / PHYSICS_STEPS;
                 
                 if TOUCHING_GROUND(goo[i].x, goo[i].y) {
@@ -319,7 +318,7 @@ proc gooPhysics {
         }
     }
 
-    # Global Air Resistance (Apply ONLY ONCE per frame)
+    # Global air resistance
     i = 1;
     repeat length goo {
         goo[i].xVel *= DAMPING;
@@ -349,7 +348,7 @@ nowarp proc scanLevel {
             SCROLL_X = cx * 480;
             SCROLL_Y = cy * 360;
             
-            # Update the 'world' sprite position so it's under the scanner
+            # Move the world to the right place to scan
             broadcast_and_wait "display_world";
 
             scanOneScreen cx, cy, chunkRows, chunkCols;
