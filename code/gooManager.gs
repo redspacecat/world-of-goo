@@ -419,6 +419,7 @@ proc handlePipe {
     }
     if not PIPE_OPEN and wasOpen {
         queueSound "suck_end";
+        stopSound "suck_loop";
     }
     pipeOpenPrev = PIPE_OPEN;
 

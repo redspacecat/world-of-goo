@@ -46,9 +46,16 @@ on "start_game" {
 
 proc handleSounds {
     until length SOUND_QUEUE == 0 {
-        sound_name = SOUND_QUEUE[1];
+        soundAction = SOUND_QUEUE[1];
         delete SOUND_QUEUE[1];
-        clone;
+        soundName = SOUND_QUEUE[1];
+        delete SOUND_QUEUE[1];
+        if soundAction == "start" {
+            clone;
+        } elif soundAction == "stop" {
+            soundToStop = soundName;
+            broadcast "stop_sound";
+        }
     }
 }
 
@@ -56,9 +63,15 @@ onclone {
     playSound;
 }
 
+on "stop_sound" {
+    if soundName == "sounds"."soundToStop" {
+        delete_this_clone;
+    }
+}
+
 proc playSound {
-    local idx = sound_name in SOUND_DATA.name;
-    local name = sound_name;
+    local idx = soundName in SOUND_DATA.name;
+    local name = soundName;
     if idx > 0 {
         if SOUND_DATA[idx].pitchMin and SOUND_DATA[idx].pitchMax {
             set_pitch_effect random(SOUND_DATA[idx].pitchMin, SOUND_DATA[idx].pitchMax);
