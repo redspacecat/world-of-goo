@@ -21,15 +21,25 @@ costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg";
 %include code/utils
 
 onflag {
+    broadcast_and_wait "init_constants";
+    broadcast_and_wait "init_game";
+    broadcast "start_game";
+}
+
+on "init_constants" {
+    initConstants;
+}
+
+on "init_game" {
     delete goo;
     delete gooConnections;
     delete gooConnectionLengths;
-    initConstants;
+    delete SOUND_QUEUE;
 
     TICK = 0;
     SCROLL_X = 0;
     SCROLL_Y = 0;
-    LEVEL_NUM = 4;
+    LEVEL_NUM = 1;
     PIPE_OPEN = false;
     COLLECTED_GOO = 0;
     GAME_STARTED = false;
@@ -44,15 +54,17 @@ onflag {
     selectedGoo = 0;
     selectedCreationGoo = GooType.Black;
     pen_up;
+    erase_all;
 
     scanLevel;
     switch_costume "renderbox";
     clear_graphic_effects;
     hide;
+}
 
-    broadcast "start_game";
+on "start_game" {
     GAME_STARTED = true;
-
+    
     forever {
         moveCamera;
         handleSelection;

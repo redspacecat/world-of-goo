@@ -31,9 +31,14 @@ proc initSounds {
     addSound "suck_loop", 1;
 }
 
-onflag {
+on "init_constants" {
+    if 1 == 1 {
+        delete_this_clone;
+    }
     initSounds;
-    delete SOUND_QUEUE;
+}
+
+on "start_game" {
     forever {
         handleSounds;
     }
