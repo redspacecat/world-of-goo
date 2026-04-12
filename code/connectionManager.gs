@@ -131,12 +131,12 @@ proc findPossibleConnections {
     repeat length goo {
         if i != selectedGoo and goo[i].state == GooState.Attached {
             local connDistance = DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[i].x, goo[i].y);
-            if connDistance < REST_LENGTH + 10 {
+            if connDistance < REST_LENGTH + 5 {
                 # Detecting if the target connection line crosses through any of the connections
                 local j = 1;
                 local intersects = false;
                 repeat length gooConnections {
-                    if gooConnections[j] > 0 and DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[gooConnections[j]].x, goo[gooConnections[j]].y) < REST_LENGTH + 10 {
+                    if gooConnections[j] > 0 and DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[gooConnections[j]].x, goo[gooConnections[j]].y) < REST_LENGTH + 5 {
                         if not intersects {
                             local currentID = ((j - 1) // MAX_CONNECTIONS) + 1;
                             local Point A = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};

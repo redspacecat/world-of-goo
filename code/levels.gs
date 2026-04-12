@@ -62,10 +62,10 @@ proc makeTriangle x, y, type1=GooType.Black, type2=GooType.Black, type3=GooType.
 }
 
 proc makeSquare x, y, type1=GooType.Black, type2=GooType.Black, type3=GooType.Black, type4=GooType.Black {
-    addGoo $x - (REST_LENGTH / 2), $y, $type1;
-    addGoo $x + (REST_LENGTH / 2), $y, $type2;
-    addGoo $x - (REST_LENGTH / 2), $y + REST_LENGTH, $type3;
-    addGoo $x + (REST_LENGTH / 2), $y + REST_LENGTH, $type4;
+    addGoo $x - (REST_LENGTH / 2 * 0.8), $y, $type1;
+    addGoo $x + (REST_LENGTH / 2 * 0.8), $y, $type2;
+    addGoo $x - (REST_LENGTH / 2 * 0.8), $y + REST_LENGTH * 0.8, $type3;
+    addGoo $x + (REST_LENGTH / 2 * 0.8), $y + REST_LENGTH * 0.8, $type4;
     addGooConnection 1, 2, true;
     addGooConnection 1, 3, true;
     addGooConnection 1, 4, true;
