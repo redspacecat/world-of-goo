@@ -44,6 +44,10 @@ on "start_game" {
     }
 }
 
+on "stop_game" {
+    stop_other_scripts;
+}
+
 proc handleSounds {
     until length SOUND_QUEUE == 0 {
         soundAction = SOUND_QUEUE[1];

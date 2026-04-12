@@ -10,6 +10,11 @@ onflag {
     set_ghost_effect 100;
 }
 
+on "init" {
+    show;
+    set_ghost_effect 100;
+}
+
 on "start_game" {
     hide;
     set_ghost_effect 0;

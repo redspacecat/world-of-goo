@@ -21,6 +21,11 @@ costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg";
 %include code/utils
 
 onflag {
+    hide;
+    broadcast "title_screen";
+}
+
+on "init" {
     broadcast_and_wait "init_constants";
     broadcast_and_wait "init_game";
     broadcast "start_game";
@@ -39,7 +44,6 @@ on "init_game" {
     TICK = 0;
     SCROLL_X = 0;
     SCROLL_Y = 0;
-    LEVEL_NUM = 1;
     PIPE_OPEN = false;
     COLLECTED_GOO = 0;
     GAME_STARTED = false;
@@ -78,6 +82,10 @@ on "start_game" {
         broadcast "display_goo";
         TICK++;
     }
+}
+
+on "stop_game" {
+    stop_other_scripts;
 }
 
 on "display_goo" {
