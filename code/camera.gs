@@ -12,14 +12,14 @@ proc moveCamera {
     if SCROLL_X < 0 { 
         SCROLL_X = 0; 
     }
-    if SCROLL_X > LEVEL_WIDTH - 480 { 
-        SCROLL_X = LEVEL_WIDTH - 480; 
+    if SCROLL_X > CAM_WIDTH - 480 { 
+        SCROLL_X = CAM_WIDTH - 480; 
     }
 
     if SCROLL_Y < 0 { 
         SCROLL_Y = 0; 
     }
-    if SCROLL_Y > LEVEL_HEIGHT - 360 { 
-        SCROLL_Y = LEVEL_HEIGHT - 360; 
+    if SCROLL_Y > CAM_HEIGHT - 360 { 
+        SCROLL_Y = CAM_HEIGHT - 360; 
     }
 }

@@ -29,7 +29,7 @@ onflag {
     TICK = 0;
     SCROLL_X = 0;
     SCROLL_Y = 0;
-    LEVEL_NUM = 3;
+    LEVEL_NUM = 4;
     PIPE_OPEN = false;
     COLLECTED_GOO = 0;
     GAME_STARTED = false;

@@ -1,18 +1,21 @@
 proc loadLevel levelNum {
     if $levelNum == 1 {
-        setWorldSize 1, 1, 1;
+        setCollisionSize 1, 1, 1;
+        setWorldSize 1, 1;
         setPipe "0,90;0,150;100,150;100,200";
 
         makeSquare 0, -120;
         spawnGooBatch 10, GooType.Black, -50, 50, -50, 50;
     } elif $levelNum == 2 {
-        setWorldSize 2, 1, 2;
+        setCollisionSize 2, 1, 2;
+        setWorldSize 2, 1;
         setPipe "520,90;520,150;960,150";
 
         makeSquare -20, -25;
         spawnGooBatch 30, GooType.Black, -180, 0, 10, 100;
     } elif $levelNum == 3 {
-        setWorldSize 1, 2, 2;
+        setCollisionSize 1, 2, 2;
+        setWorldSize 1, 2;
         setPipe "0,420;0,470;50,470;50,500;20,500;20,600";
 
         addGoo -10, -60, GooType.Green;
@@ -22,12 +25,12 @@ proc loadLevel levelNum {
         addGooConnection 2, 3, true;
         addGooConnection 3, 1, true;
         addGoo -40, 0, GooType.Green;
-        addGoo 72, 0, GooType.Green;
+        addGoo 71, 0, GooType.Green;
         addGooConnection 4, 3, true;
         addGooConnection 4, 1, true;
         addGooConnection 5, 3, true;
         addGooConnection 5, 2, true;
-        addGoo -70, -60, GooType.Green;
+        addGoo -69, -60, GooType.Green;
         addGoo -88, 0, GooType.Green;
         addGooConnection 6, 4, true;
         addGooConnection 6, 1, true;
@@ -39,6 +42,13 @@ proc loadLevel levelNum {
         addGooConnection 8, 1, true;
 
         spawnGooBatch 10, GooType.Green, 0, 0, 0, 0;
+    } elif $levelNum == 4 {
+        setCollisionSize 1, 3, 2;
+        setWorldSize 1, 2.5;
+        setPipe "0,650;0,1000";
+
+        makeTriangle 0, -120;
+        spawnGooBatch 150, GooType.Black, -200, 200, -50, 400;
     }
 }
 
@@ -70,13 +80,18 @@ proc spawnGooBatch amount, type, minX, maxX, minY, maxY {
     }
 }
 
-proc setWorldSize width, height, resolution=4 {
+proc setCollisionSize width, height, resolution=4 {
     GRID_SIZE = $resolution;
     LEVEL_WIDTH = 480 * $width;
     LEVEL_HEIGHT = 360 * $height; 
     
     COLS = LEVEL_WIDTH / GRID_SIZE;
     ROWS = LEVEL_HEIGHT / GRID_SIZE;
+}
+
+proc setWorldSize width, height {
+    CAM_WIDTH = 480 * $width;
+    CAM_HEIGHT = 360 * $height; 
 }
 
 proc setPipe pipeStr {

@@ -73,15 +73,16 @@ proc handleSelection {
 
                     dragDistance += dist;
 
-                    selectedOldPos.x = goo[selectedGoo].x;
-                    selectedOldPos.y = goo[selectedGoo].y;
-                    findPossibleConnections;
+                    # selectedOldPos.x = goo[selectedGoo].x;
+                    # selectedOldPos.y = goo[selectedGoo].y;
+                    # findPossibleConnections;
 
-                    oldMousePos.x = MOUSE_X;
-                    oldMousePos.y = MOUSE_Y;
-                    selectedOldPos.x = goo[selectedGoo].x;
-                    selectedOldPos.y = goo[selectedGoo].y;
+                    # oldMousePos.x = MOUSE_X;
+                    # oldMousePos.y = MOUSE_Y;
+                    # selectedOldPos.x = goo[selectedGoo].x;
+                    # selectedOldPos.y = goo[selectedGoo].y;
                     findPossibleConnections;
+                    local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
                     local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
                 }
             }
@@ -93,7 +94,7 @@ proc handleSelection {
             findPossibleConnections;
             if isValidStrandConnection {
                 addGooConnection strandConnection.id1, strandConnection.id2, bypassLimit: true;
-                queueSound "glee";
+                placed = true;
                 deleteGoo selectedGoo;
             } else {
                 if length possibleConnections >= gooTypes[goo[selectedGoo].type].minConns {
@@ -107,14 +108,14 @@ proc handleSelection {
                         }
                         i++;
                     }
-                    if placed {
-                        queueSound "glee";
-                    }
                 }
             }
-        }
-        if dragDistance > 20 {
-            queueSound "fling";
+            if placed {
+                queueSound "glee";
+            } elif dragDistance > 20 {
+                queueSound "fling";
+                queueSound "mumble";
+            }
         }
         selectedGoo = 0;
         wasMouseDown = false;
@@ -135,7 +136,7 @@ proc findPossibleConnections {
                 local j = 1;
                 local intersects = false;
                 repeat length gooConnections {
-                    if gooConnections[j] > 0 {
+                    if gooConnections[j] > 0 and DIST(goo[selectedGoo].x, goo[selectedGoo].y, goo[gooConnections[j]].x, goo[gooConnections[j]].y) < REST_LENGTH + 10 {
                         if not intersects {
                             local currentID = ((j - 1) // MAX_CONNECTIONS) + 1;
                             local Point A = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
