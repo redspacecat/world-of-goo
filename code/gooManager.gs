@@ -194,11 +194,27 @@ func getRoamingNeighbor(node, exclude) {
                 }
                 return closest;
             } else {
-                # Choose randomly for exploration
                 return possibleNeighbors["random"];
             }
         } else {
-            return possibleNeighbors["random"];
+            if random(0.0, 1.0) < 0.45 {
+                # Choose the neighbor closest to the target
+                local closest = 0;
+                local minDist = 999999;
+                local idx = 1;
+                repeat length possibleNeighbors {
+                    local n = possibleNeighbors[idx];
+                    local dist = DIST(goo[n].x, goo[n].y, MOUSE_X, MOUSE_Y);
+                    if dist < minDist {
+                        minDist = dist;
+                        closest = n;
+                    }
+                    idx++;
+                }
+                return closest;
+            } else {
+                return possibleNeighbors["random"];
+            }
         }
     }
     
