@@ -5,22 +5,22 @@ proc handleSelection {
                 i = 1;
                 repeat length goo {
                     if DIST(goo[i].x, goo[i].y, MOUSE_X, MOUSE_Y) < 12 {
+                        local pickup = false;
                         if goo[i].state == GooState.Attached {
                             if gooTypes[goo[i].type].isDetachable {
-                                selectedGoo = i;
-                                local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
-                                local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
-                                queueSound "pickup";
-                                dragDistance = 0;
-                                stop_this_script;
+                                pickup = true;
                             }
                         } else {
+                            pickup = true;
+                        }
+                        if pickup {
+                            selectedGoo = i;
                             local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
                             local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
-                            selectedGoo = i;
                             queueSound "pickup";
                             queueSound gooTypes[goo[selectedGoo].type].pickupSound;
                             dragDistance = 0;
+                            findPossibleConnections;
                             stop_this_script;
                         }
                     }
@@ -73,14 +73,6 @@ proc handleSelection {
 
                     dragDistance += dist;
 
-                    # selectedOldPos.x = goo[selectedGoo].x;
-                    # selectedOldPos.y = goo[selectedGoo].y;
-                    # findPossibleConnections;
-
-                    # oldMousePos.x = MOUSE_X;
-                    # oldMousePos.y = MOUSE_Y;
-                    # selectedOldPos.x = goo[selectedGoo].x;
-                    # selectedOldPos.y = goo[selectedGoo].y;
                     findPossibleConnections;
                     local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
                     local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
