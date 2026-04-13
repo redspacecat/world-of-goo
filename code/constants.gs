@@ -44,7 +44,8 @@ struct GooBall {
     targetNode=0,    # The node it's going to
     climbDist=0,     # Pixels traveled along the current strand
     roamTimer=0,     # Timer for random movements
-    moveDir=1
+    moveDir=1,
+    rotation=90
 }
 
 struct GooConn {
@@ -87,7 +88,7 @@ proc addGooType GooTypeDef def {
 
 proc initGooType {
     delete gooTypes;
-    addGooType GooTypeDef {gooColor: "#353535", connColor: "#6e6e6e", maxConns: 2, minConns: 2, isDetachable: false, pickupSound: "batsqueak"};
-    addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#20a026", maxConns: 3, minConns: 2, isDetachable: true, pickupSound: "chirp"};
+    addGooType GooTypeDef {gooColor: "#353535", connColor: "#353535", maxConns: 2, minConns: 2, isDetachable: false, pickupSound: "batsqueak"};
+    addGooType GooTypeDef {gooColor: "#0c6011", connColor: "#1a781f", maxConns: 3, minConns: 2, isDetachable: true, pickupSound: "chirp"};
     addGooType GooTypeDef {gooColor: "#dadada", connColor: "#a8a8a8", maxConns: 4, minConns: 2, isDetachable: false};
 }

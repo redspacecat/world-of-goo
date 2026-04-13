@@ -1,4 +1,4 @@
-costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg";
+costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg", "assets/images/goo/*.svg";
 
 %define MOUSE_X mouse_x() + SCROLL_X
 %define MOUSE_Y mouse_y() + SCROLL_Y
@@ -6,6 +6,7 @@ costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg";
 %define TOUCHING_GROUND_GRID(gridX, gridY) worldGrid[(gridY - 1) * COLS + gridX] == 1
 %define TOUCHING_GROUND(xPos, yPos) worldGrid[((floor((yPos + WORLD_OFFSET_Y) / GRID_SIZE) + 1) - 1) * COLS + (floor((xPos + WORLD_OFFSET_X) / GRID_SIZE) + 1)] == 1
 %define IS_GOO_ONSCREEN(id) abs(goo[id].x - SCROLL_X) < 240 + 20 and abs(goo[id].y - SCROLL_Y) < 180 + 20
+%define ATAN2(x, y) atan(x / y) + ((y < 0) * 180);
 
 %include std/math
 %include std/list

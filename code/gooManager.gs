@@ -68,7 +68,7 @@ proc updateGooAI {
         # Only process AI for gooballs NOT being held
         if i != selectedGoo {
             if goo[i].state == GooState.Free {
-                # Rolling, only when on gorund
+                # Rolling, only when on ground
                 if TOUCHING_GROUND(goo[i].x, goo[i].y - 2) {
                     goo[i].roamTimer--;
                     if goo[i].roamTimer <= 0 {
@@ -78,6 +78,7 @@ proc updateGooAI {
                     # Apply rolling speed 
                     local targetSpeed = goo[i].moveDir * 1.5;
                     goo[i].xVel += (targetSpeed - goo[i].xVel) * 0.35;
+                    goo[i].rotation += targetSpeed * 4;
                 }
 
                 # Climbing detection
