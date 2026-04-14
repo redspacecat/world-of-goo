@@ -1,8 +1,9 @@
 list GooBall goo;
 list gooConnections;
+list gooConnectionLengths;
 list GooTypeDef gooTypes;
 list GooConn possibleConnections;
-list gooConnectionLengths;
+list Particle particles;
 list worldGrid;
 
 # Temp lists
@@ -18,7 +19,8 @@ enum GooType {
 enum GooState {
     Free=1,
     Roaming=2,
-    Attached=3
+    Attached=3,
+    Sleeping=4
 }
 
 # conn = connection
@@ -56,6 +58,14 @@ struct GooConn {
 struct StrandConnection {
     id1,
     id2
+}
+
+struct Particle {
+    x,
+    y,
+    life,
+    maxLife,
+    seed
 }
 
 struct Point {

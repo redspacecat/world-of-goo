@@ -1,4 +1,4 @@
-proc renderGoo {
+proc render {
     # Draw goo connections
     switch_costume "renderbox";
     set_pen_size 7;
@@ -44,7 +44,7 @@ proc renderGoo {
                     }
                 } else {
                     point_in_direction 90;
-                    set_size 95 + (sin(TICK * 3) * 15);
+                    set_size 95 + (sin(TICK * 3) * 10);
                     switch_costume "goo-" & goo[i].type;
                 }
                 stamp;
@@ -74,6 +74,9 @@ proc renderGoo {
         }
         i++;
     }
+
+    # Draw the particles
+    renderParticles;
 }
 
 proc drawConnection gooID, connectID, changeColor=true {
@@ -131,4 +134,43 @@ proc drawConnection gooID, connectID, changeColor=true {
     
     pen_up;
     set_pen_brightness 0;
+}
+
+proc updateParticles {
+    local i = length particles;
+    until i < 1 {
+        particles[i].life--;
+        
+        if particles[i].life <= 0 {
+            delete particles[i];
+        } else {
+            particles[i].y += 0.6; 
+            particles[i].x += sin(TICK * 4 + particles[i].seed) * 0.5;
+        }
+        i--;
+    }
+}
+
+proc renderParticles {
+    switch_costume "sleep"; 
+    
+    local i = 1;
+    repeat length particles {
+        # Only render if it's actually on the screen
+        if abs(particles[i].x - SCROLL_X) < 260 and abs(particles[i].y - SCROLL_Y) < 200 {
+            GOTO(particles[i].x, particles[i].y);
+            
+            # Fade out as it gets older
+            local fade = 100 - ((particles[i].life / particles[i].maxLife) * 100);
+            set_ghost_effect fade;
+            
+            # Slightly grow as it floats up
+            local scale = 40 + ((1 - (particles[i].life / particles[i].maxLife)) * 50);
+            set_size scale;
+            
+            stamp;
+        }
+        i++;
+    }
+    clear_graphic_effects;
 }

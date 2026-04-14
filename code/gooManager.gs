@@ -1,5 +1,5 @@
-proc addGoo x, y, type {
-    add GooBall {x: $x, y: $y, type: $type, state: GooState.Free} to goo;
+proc addGoo x, y, type, state=GooState.Free {
+    add GooBall {x: $x, y: $y, type: $type, state: $state} to goo;
     repeat MAX_CONNECTIONS {
         add 0 to gooConnections;
         add 0 to gooConnectionLengths;
@@ -82,7 +82,7 @@ proc updateGooAI {
                 }
 
                 # Climbing detection
-                if TICK % 15 == 0 {
+                if TICK % 5 == 0 {
                     local j = 1;
                     repeat length goo {
                         if i != j and goo[j].state == GooState.Attached {
@@ -157,6 +157,34 @@ proc updateGooAI {
                     
                     goo[i].x = goo[sID].x + (goo[tID].x - goo[sID].x) * t;
                     goo[i].y = goo[sID].y + (goo[tID].y - goo[sID].y) * t;
+                }
+            } elif goo[i].state == GooState.Sleeping {
+                if TICK % 15 == 0 {
+                    local j = 1;
+                    local woken = false;
+                    repeat length goo {
+                        if i != j and goo[j].state == GooState.Attached {
+                            if DIST(goo[i].x, goo[i].y, goo[j].x, goo[j].y) < 24 {
+                                goo[i].state = GooState.Free;
+                                goo[i].yVel += 3; # Little jump
+                                queueSound "discovery";
+                                woken = true;
+                            }
+                        }
+                        if woken { j = length goo; } # Break early
+                        j++;
+                    }
+                }
+                
+                # Particle spawning logic
+                if (TICK + i * 10) % 30 == 0 {
+                    add Particle {
+                        x: goo[i].x + random(-5, 5),
+                        y: goo[i].y + 10,
+                        life: 60,
+                        maxLife: 60,
+                        seed: random(0, 360)
+                    } to particles;
                 }
             }
         }

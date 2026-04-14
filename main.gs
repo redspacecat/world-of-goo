@@ -1,4 +1,8 @@
-costumes "assets/images/hitbox.svg", "assets/images/renderbox.svg", "assets/images/goo/*.svg";
+costumes
+"assets/images/hitbox.svg",
+"assets/images/renderbox.svg",
+"assets/images/goo/*.svg",
+"assets/images/sleep.svg";
 
 %define MOUSE_X mouse_x() + SCROLL_X
 %define MOUSE_Y mouse_y() + SCROLL_Y
@@ -40,6 +44,7 @@ on "init_game" {
     delete goo;
     delete gooConnections;
     delete gooConnectionLengths;
+    delete particles;
     delete SOUND_QUEUE;
 
     TICK = 0;
@@ -62,7 +67,6 @@ on "init_game" {
     loadLevel(LEVEL_NUM);
 
     selectedGoo = 0;
-    selectedCreationGoo = GooType.Black;
     pen_up;
     erase_all;
 
@@ -79,6 +83,7 @@ on "start_game" {
         handleSelection;
         moveCamera;
         updateGooAI;
+        updateParticles;
         handlePipe;
         gooPhysics;
 
@@ -95,19 +100,21 @@ on "stop_game" {
 }
 
 on "display_goo" {
-    renderGoo;
-}
-
-onkey "space" {
-    addGoo MOUSE_X, MOUSE_Y, selectedCreationGoo;
+    render;
 }
 
 onkey "1" {
-    selectedCreationGoo = GooType.Black;
+    addGoo MOUSE_X, MOUSE_Y, GooType.Black;
 }
+
 onkey "2" {
-    selectedCreationGoo = GooType.Green;
+    addGoo MOUSE_X, MOUSE_Y, GooType.Green;
 }
+
 onkey "3" {
-    selectedCreationGoo = GooType.White;
+    addGoo MOUSE_X, MOUSE_Y, GooType.White;
+}
+
+onkey "4" {
+    addGoo MOUSE_X, MOUSE_Y, GooType.Black, GooState.Sleeping;
 }
