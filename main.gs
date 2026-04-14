@@ -54,6 +54,11 @@ on "init_game" {
     dragDistance = 0;
     pipeLoopTimer = 0;
 
+    wasCamDragging = false;
+    edgeScrollLocked = false;
+    Vel camVel = Vel {x: 0, y: 0};
+    Point lastCamPos = Point {x: 0, y: 0};
+
     loadLevel(LEVEL_NUM);
 
     selectedGoo = 0;
@@ -71,8 +76,8 @@ on "start_game" {
     GAME_STARTED = true;
     
     forever {
-        moveCamera;
         handleSelection;
+        moveCamera;
         updateGooAI;
         handlePipe;
         gooPhysics;

@@ -63,6 +63,11 @@ struct Point {
     y
 }
 
+struct Vel {
+    x,
+    y
+}
+
 proc initConstants {
     SPRING_K = 1;         # Spring stiffness
     SPRING_DAMPING = 0.8; # How quickly the spring stops bouncing
