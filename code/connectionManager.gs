@@ -2,29 +2,35 @@ proc handleSelection {
     if mouse_down() {
         if selectedGoo == 0 {
             if not wasMouseDown {
-                i = 1;
-                repeat length goo {
-                    if DIST(goo[i].x, goo[i].y, MOUSE_X, MOUSE_Y) < 12 {
-                        local pickup = false;
-                        if goo[i].state == GooState.Attached {
-                            if gooTypes[goo[i].type].isDetachable {
-                                pickup = true;
+                local pickupState = GooState.Roaming;
+                repeat 2 {
+                    local i = 1;
+                    repeat length goo {
+                        if (pickupState == 0 and goo[i].state != GooState.Roaming) or pickupState == goo[i].state {
+                            if DIST(goo[i].x, goo[i].y, MOUSE_X, MOUSE_Y) < 12 {
+                                local pickup = false;
+                                if goo[i].state == GooState.Attached {
+                                    if gooTypes[goo[i].type].isDetachable {
+                                        pickup = true;
+                                    }
+                                } else {
+                                    pickup = true;
+                                }
+                                if pickup {
+                                    selectedGoo = i;
+                                    local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                                    local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
+                                    queueSound "pickup";
+                                    queueSound gooTypes[goo[selectedGoo].type].pickupSound;
+                                    dragDistance = 0;
+                                    isValidStrandConnection = false;
+                                    stop_this_script;
+                                }
                             }
-                        } else {
-                            pickup = true;
                         }
-                        if pickup {
-                            selectedGoo = i;
-                            local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
-                            local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
-                            queueSound "pickup";
-                            queueSound gooTypes[goo[selectedGoo].type].pickupSound;
-                            dragDistance = 0;
-                            isValidStrandConnection = false;
-                            stop_this_script;
-                        }
+                        i++;
                     }
-                    i++;
+                    pickupState = 0;
                 }
             }
         } else {
