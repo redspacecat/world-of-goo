@@ -31,7 +31,7 @@ proc loadLevel levelNum {
         addGooConnection 5, 3, true;
         addGooConnection 5, 2, true;
         addGoo -69, -60, GooType.Green;
-        addGoo -88, 0, GooType.Green;
+        addGoo -87, 0, GooType.Green;
         addGooConnection 6, 4, true;
         addGooConnection 6, 1, true;
         addGooConnection 7, 4, true;

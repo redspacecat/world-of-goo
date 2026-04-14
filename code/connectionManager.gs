@@ -20,7 +20,7 @@ proc handleSelection {
                             queueSound "pickup";
                             queueSound gooTypes[goo[selectedGoo].type].pickupSound;
                             dragDistance = 0;
-                            findPossibleConnections;
+                            isValidStrandConnection = false;
                             stop_this_script;
                         }
                     }
