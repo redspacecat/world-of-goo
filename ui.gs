@@ -48,7 +48,7 @@ onclone {
     } elif C("w") {
         broadcast "init";
     } elif C("h") {
-        set_size 8;
+        set_size 4.5;
     }
 }
 
