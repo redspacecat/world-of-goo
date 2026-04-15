@@ -53,7 +53,9 @@ on "init_game" {
     SCROLL_Y = 0;
     PIPE_OPEN = false;
     COLLECTED_GOO = 0;
+    TARGET_GOO = 0;
     GAME_STARTED = false;
+    CONTINUE_SHOWN = false;
     
     wasMouseDown = false;
     pipeOpenPrev = false;
@@ -96,6 +98,7 @@ on "start_game" {
         broadcast "display_background";
         broadcast "display_world";
         broadcast "display_goo";
+        broadcast "display_text";
         TICK++;
     }
 }

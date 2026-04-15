@@ -9,6 +9,7 @@ var COLS;
 var GRID_SIZE;
 var PIPE_OPEN;
 var COLLECTED_GOO;
+var TARGET_GOO;
 var GAME_STARTED;
 
 list PIPE;

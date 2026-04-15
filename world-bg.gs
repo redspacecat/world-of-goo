@@ -1,5 +1,7 @@
 costumes "assets/images/levels/background/*.svg", "assets/images/giant-square.svg", "assets/images/blank.svg";
 
+hide;
+
 onflag {
     show;
     set_ghost_effect 100;

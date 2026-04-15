@@ -3,20 +3,24 @@ proc loadLevel levelNum {
         setCollisionSize 1, 1, 1;
         setWorldSize 1, 1;
         setPipe "0,90;0,150;100,150;100,200";
+        TARGET_GOO = 5;
 
         makeSquare 0, -120;
-        spawnGooBatch 10, GooType.Black, GooState.Free, -50, 50, -50, 50;
+        spawnGooBatch 15, GooType.Black, GooState.Free, -50, 50, -50, 50;
     } elif $levelNum == 2 {
         setCollisionSize 2, 1, 2;
         setWorldSize 2, 1;
         setPipe "520,90;520,150;960,150";
+        TARGET_GOO = 5;
 
         makeSquare -20, -25;
         spawnGooBatch 30, GooType.Black, GooState.Free, -180, 0, 10, 100;
+        spawnGooBatch 5, GooType.Black, GooState.Sleeping, 550, 630, 0, 0;
     } elif $levelNum == 3 {
         setCollisionSize 1, 2, 2;
         setWorldSize 1, 2;
         setPipe "0,420;0,470;50,470;50,500;20,500;20,600";
+        TARGET_GOO = 8;
 
         STRUCTURE_GRAB_WAIT = 1;
 
@@ -43,12 +47,13 @@ proc loadLevel levelNum {
         addGooConnection 8, 2, true;
         addGooConnection 8, 1, true;
 
-        spawnGooBatch 10, GooType.Green, GooState.Free, 0, 0, 0, 0;
+        spawnGooBatch 10, GooType.Green, GooState.Free, -50, 50, -50, 50;
     } elif $levelNum == 4 {
         setCollisionSize 1, 2, 2;
         setWorldSize 1, 2;
         setStartPos 0, 45;
         setPipe "0,500;0,600";
+        TARGET_GOO = 10;
 
         REST_LENGTH = 70;
         STRUCTURE_GRAB_WAIT = 1;
@@ -67,10 +72,11 @@ proc loadLevel levelNum {
     } elif $levelNum == 5 {
         setCollisionSize 1, 3, 2;
         setWorldSize 1, 2.5;
-        setPipe "0,650;0,1000";
+        setPipe "0,600;0,1000";
+        TARGET_GOO = 15;
 
         makeTriangle 0, -120;
-        spawnGooBatch 150, GooType.Black, GooState.Free, -200, 200, -50, 400;
+        spawnGooBatch 170, GooType.Black, GooState.Free, -200, 200, -50, 400;
     }
 }
 

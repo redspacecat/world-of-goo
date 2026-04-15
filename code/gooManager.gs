@@ -461,6 +461,7 @@ proc handlePipe {
 
     if PIPE_OPEN and not wasOpen {
         queueSound "suck_begin";
+        queueSound "anticipation";
     }
     if not PIPE_OPEN and wasOpen {
         queueSound "suck_end";
@@ -506,5 +507,10 @@ proc handlePipe {
             }
             i--;
         }
+    }
+
+    if COLLECTED_GOO == TARGET_GOO and not CONTINUE_SHOWN {
+        CONTINUE_SHOWN = true;
+        broadcast "show_continue";
     }
 }
