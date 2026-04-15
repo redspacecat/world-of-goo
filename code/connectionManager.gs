@@ -9,23 +9,25 @@ proc handleSelection {
                         if goo[i].state != GooState.Sleeping {
                             if (pickupState == 0 and goo[i].state != GooState.Roaming) or pickupState == goo[i].state {
                                 if DIST(goo[i].x, goo[i].y, MOUSE_X, MOUSE_Y) < 12 {
-                                    local pickup = false;
-                                    if goo[i].state == GooState.Attached {
-                                        if gooTypes[goo[i].type].isDetachable {
+                                    if not TOUCHING_GROUND(goo[i].x, goo[i].y) {
+                                        local pickup = false;
+                                        if goo[i].state == GooState.Attached {
+                                            if gooTypes[goo[i].type].isDetachable {
+                                                pickup = true;
+                                            }
+                                        } else {
                                             pickup = true;
                                         }
-                                    } else {
-                                        pickup = true;
-                                    }
-                                    if pickup {
-                                        selectedGoo = i;
-                                        local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
-                                        local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
-                                        queueSound "pickup";
-                                        queueSound gooTypes[goo[selectedGoo].type].pickupSound;
-                                        dragDistance = 0;
-                                        isValidStrandConnection = false;
-                                        stop_this_script;
+                                        if pickup {
+                                            selectedGoo = i;
+                                            local Point selectedOldPos = Point {x: goo[selectedGoo].x, y: goo[selectedGoo].y};
+                                            local Point oldMousePos = Point {x: MOUSE_X, y: MOUSE_Y};
+                                            queueSound "pickup";
+                                            queueSound gooTypes[goo[selectedGoo].type].pickupSound;
+                                            dragDistance = 0;
+                                            isValidStrandConnection = false;
+                                            stop_this_script;
+                                        }
                                     }
                                 }
                             }
