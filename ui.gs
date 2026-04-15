@@ -6,10 +6,11 @@ on "title_screen" {
         delete_this_clone;
     }
     show;
-    make -78, -28, "level1";
-    make 78, -28, "level2";
-    make -78, -97, "level3";
-    make 78, -97, "level4";
+    make -78, 0, "level1";
+    make 78, 0, "level2";
+    make -78, -70, "level3";
+    make 78, -70, "level4";
+    make 0, -140, "level5";
     goto 0, 0;
     switch_costume "title";
     goto_back;

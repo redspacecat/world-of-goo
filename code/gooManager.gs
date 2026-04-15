@@ -82,7 +82,7 @@ proc updateGooAI {
                 }
 
                 # Climbing detection
-                if TICK % 5 == 0 {
+                if TICK % STRUCTURE_GRAB_WAIT == 0 {
                     local j = 1;
                     repeat length goo {
                         if i != j and goo[j].state == GooState.Attached {

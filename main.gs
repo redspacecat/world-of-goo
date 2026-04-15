@@ -47,6 +47,7 @@ on "init_game" {
     delete particles;
     delete SOUND_QUEUE;
 
+    initConstants;
     TICK = 0;
     SCROLL_X = 0;
     SCROLL_Y = 0;
@@ -63,10 +64,11 @@ on "init_game" {
     edgeScrollLocked = false;
     Vel camVel = Vel {x: 0, y: 0};
     Point lastCamPos = Point {x: 0, y: 0};
+    selectedGoo = 0;
 
     loadLevel(LEVEL_NUM);
+    Point levelStartPos = Point {x: SCROLL_X, y: SCROLL_Y};
 
-    selectedGoo = 0;
     pen_up;
     erase_all;
 
@@ -74,6 +76,9 @@ on "init_game" {
     switch_costume "renderbox";
     clear_graphic_effects;
     hide;
+
+    SCROLL_X = levelStartPos.x;
+    SCROLL_Y = levelStartPos.y;
 }
 
 on "start_game" {

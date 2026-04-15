@@ -5,18 +5,20 @@ proc loadLevel levelNum {
         setPipe "0,90;0,150;100,150;100,200";
 
         makeSquare 0, -120;
-        spawnGooBatch 10, GooType.Black, -50, 50, -50, 50;
+        spawnGooBatch 10, GooType.Black, GooState.Free, -50, 50, -50, 50;
     } elif $levelNum == 2 {
         setCollisionSize 2, 1, 2;
         setWorldSize 2, 1;
         setPipe "520,90;520,150;960,150";
 
         makeSquare -20, -25;
-        spawnGooBatch 30, GooType.Black, -180, 0, 10, 100;
+        spawnGooBatch 30, GooType.Black, GooState.Free, -180, 0, 10, 100;
     } elif $levelNum == 3 {
         setCollisionSize 1, 2, 2;
         setWorldSize 1, 2;
         setPipe "0,420;0,470;50,470;50,500;20,500;20,600";
+
+        STRUCTURE_GRAB_WAIT = 1;
 
         addGoo -10, -60, GooType.Green;
         addGoo 50, -60, GooType.Green;
@@ -41,14 +43,34 @@ proc loadLevel levelNum {
         addGooConnection 8, 2, true;
         addGooConnection 8, 1, true;
 
-        spawnGooBatch 10, GooType.Green, 0, 0, 0, 0;
+        spawnGooBatch 10, GooType.Green, GooState.Free, 0, 0, 0, 0;
     } elif $levelNum == 4 {
+        setCollisionSize 1, 2, 2;
+        setWorldSize 1, 2;
+        setStartPos 0, 45;
+        setPipe "0,500;0,600";
+
+        REST_LENGTH = 70;
+        STRUCTURE_GRAB_WAIT = 1;
+
+        addGoo -70, 186, GooType.White;
+        addGoo 70, 186, GooType.White;
+        addGoo -40, 140, GooType.White;
+        addGoo 40, 140, GooType.White;
+        addGooConnection 1, 3;
+        addGooConnection 2, 4;
+        addGooConnection 3, 4;
+
+        spawnGooBatch 30, GooType.White, GooState.Sleeping, -100, 100, -80, -50;
+        spawnGooBatch 5, GooType.White, GooState.Free, -120, -70, 195, 200;
+        spawnGooBatch 5, GooType.White, GooState.Free, 120, 70, 195, 200;
+    } elif $levelNum == 5 {
         setCollisionSize 1, 3, 2;
         setWorldSize 1, 2.5;
         setPipe "0,650;0,1000";
 
         makeTriangle 0, -120;
-        spawnGooBatch 150, GooType.Black, -200, 200, -50, 400;
+        spawnGooBatch 150, GooType.Black, GooState.Free, -200, 200, -50, 400;
     }
 }
 
@@ -74,9 +96,9 @@ proc makeSquare x, y, type1=GooType.Black, type2=GooType.Black, type3=GooType.Bl
     addGooConnection 3, 4, true;
 }
 
-proc spawnGooBatch amount, type, minX, maxX, minY, maxY {
+proc spawnGooBatch amount, type, state, minX, maxX, minY, maxY {
     repeat $amount {
-        addGoo random($minX, $maxX), random ($minY, $maxY), $type;
+        addGoo random($minX, $maxX), random ($minY, $maxY), $type, $state;
     }
 }
 
@@ -122,4 +144,9 @@ proc setPipe pipeStr {
     }
 
     insert pipeDir at PIPE[1];
+}
+
+proc setStartPos x, y {
+    SCROLL_X = $x;
+    SCROLL_Y = $y;
 }

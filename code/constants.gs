@@ -88,6 +88,7 @@ proc initConstants {
     REST_LENGTH_MIN_NORMALIZE_RATIO = 0.8; # Short strands only normalize partway toward REST_LENGTH
     PHYSICS_STEPS = 3;
     MAX_CONNECTIONS = 7;
+    STRUCTURE_GRAB_WAIT = 5;
 
     GRID_SIZE = 4;
     
